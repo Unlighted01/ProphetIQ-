@@ -8,73 +8,41 @@ interface PredictionFormProps {
 }
 
 // ── City Data ────────────────────────────────────────────────────────────────
-// Grouped by region for the optgroup UI
+// ── Pangasinan Localization ──────────────────────────────────────────────────
 const PH_CITY_GROUPS = [
   {
-    region: "Metro Manila",
-    cities: ["Manila", "Makati", "Taguig", "Pasig", "Quezon City", "Mandaluyong", "Pasay", "Parañaque", "Marikina", "Caloocan", "Las Piñas", "Muntinlupa", "Valenzuela"]
+    region: "Cities",
+    cities: ["Dagupan", "Urdaneta", "San Carlos", "Alaminos"]
   },
   {
-    region: "Luzon",
-    cities: ["Baguio", "Angeles", "San Fernando", "Cabanatuan", "General Trias", "Lipa", "Batangas City", "Lucena", "Legazpi", "Naga"]
-  },
-  {
-    region: "Visayas",
-    cities: ["Cebu City", "Lapu-Lapu", "Mandaue", "Iloilo City", "Bacolod", "Tacloban", "Dumaguete", "Ormoc"]
-  },
-  {
-    region: "Mindanao",
-    cities: ["Davao City", "General Santos", "Cagayan de Oro", "Zamboanga City", "Cotabato City", "Iligan", "Butuan"]
+    region: "Major Municipalities",
+    cities: ["Lingayen", "Calasiao", "Mangaldan", "Manaoag", "Binmaley", "Bayambang", "Malasiqui", "Rosales", "Villasis", "Binalonan", "Tayug", "Mangatarem", "Bolinao", "San Fabian", "Manaoag", "Pozorrubio"]
   }
 ];
 
-// Auto-mapping: city → lat/lng for auto-centering the map
 const CITY_COORDS: Record<string, { lat: number; lng: number }> = {
-  // Metro Manila
-  "Manila":         { lat: 14.5995, lng: 120.9842 },
-  "Makati":         { lat: 14.5547, lng: 121.0244 },
-  "Taguig":         { lat: 14.5176, lng: 121.0509 },
-  "Pasig":          { lat: 14.5764, lng: 121.0851 },
-  "Quezon City":    { lat: 14.6760, lng: 121.0437 },
-  "Mandaluyong":    { lat: 14.5794, lng: 121.0359 },
-  "Pasay":          { lat: 14.5378, lng: 121.0014 },
-  "Parañaque":      { lat: 14.4793, lng: 121.0198 },
-  "Marikina":       { lat: 14.6507, lng: 121.1029 },
-  "Caloocan":       { lat: 14.6492, lng: 120.9673 },
-  "Las Piñas":      { lat: 14.4453, lng: 120.9830 },
-  "Muntinlupa":     { lat: 14.4081, lng: 121.0415 },
-  "Valenzuela":     { lat: 14.7011, lng: 120.9830 },
-  // Luzon
-  "Baguio":         { lat: 16.4023, lng: 120.5960 },
-  "Angeles":        { lat: 15.1450, lng: 120.5887 },
-  "San Fernando":   { lat: 15.0288, lng: 120.6924 },
-  "Cabanatuan":     { lat: 15.4866, lng: 120.9686 },
-  "General Trias":  { lat: 14.3855, lng: 120.8807 },
-  "Lipa":           { lat: 13.9411, lng: 121.1631 },
-  "Batangas City":  { lat: 13.7565, lng: 121.0583 },
-  "Lucena":         { lat: 13.9322, lng: 121.6170 },
-  "Legazpi":        { lat: 13.1391, lng: 123.7438 },
-  "Naga":           { lat: 13.6192, lng: 123.1814 },
-  // Visayas
-  "Cebu City":      { lat: 10.3157, lng: 123.8854 },
-  "Lapu-Lapu":      { lat: 10.3103, lng: 123.9494 },
-  "Mandaue":        { lat: 10.3236, lng: 123.9223 },
-  "Iloilo City":    { lat: 10.6969, lng: 122.5644 },
-  "Bacolod":        { lat: 10.6713, lng: 122.9511 },
-  "Tacloban":       { lat: 11.2543, lng: 125.0000 },
-  "Dumaguete":      { lat: 9.3068,  lng: 123.3054 },
-  "Ormoc":          { lat: 11.0064, lng: 124.6079 },
-  // Mindanao
-  "Davao City":     { lat: 7.1907,  lng: 125.4553 },
-  "General Santos": { lat: 6.1164,  lng: 125.1716 },
-  "Cagayan de Oro": { lat: 8.4542,  lng: 124.6319 },
-  "Zamboanga City": { lat: 6.9214,  lng: 122.0790 },
-  "Cotabato City":  { lat: 7.2236,  lng: 124.2469 },
-  "Iligan":         { lat: 8.2280,  lng: 124.2452 },
-  "Butuan":         { lat: 8.9475,  lng: 125.5406 },
+  "Dagupan":     { lat: 16.0433, lng: 120.3333 },
+  "Urdaneta":    { lat: 15.9758, lng: 120.5707 },
+  "San Carlos":  { lat: 15.9272, lng: 120.3489 },
+  "Alaminos":    { lat: 16.1517, lng: 119.9806 },
+  "Lingayen":    { lat: 16.0204, lng: 120.2315 },
+  "Calasiao":    { lat: 16.0075, lng: 120.3586 },
+  "Mangaldan":   { lat: 16.0694, lng: 120.4025 },
+  "Manaoag":     { lat: 16.0426, lng: 120.4878 },
+  "Binmaley":    { lat: 16.0303, lng: 120.2678 },
+  "Bayambang":   { lat: 15.8111, lng: 120.4578 },
+  "Malasiqui":   { lat: 15.9189, lng: 120.4144 },
+  "Rosales":     { lat: 15.8921, lng: 120.6358 },
+  "Villasis":    { lat: 15.9014, lng: 120.5878 },
+  "Binalonan":   { lat: 16.0506, lng: 120.5925 },
+  "Tayug":       { lat: 16.0286, lng: 120.7458 },
+  "Mangatarem":  { lat: 15.7892, lng: 120.2911 },
+  "Bolinao":     { lat: 16.3853, lng: 119.8933 },
+  "San Fabian":  { lat: 16.1242, lng: 120.4042 },
+  "Pozorrubio":  { lat: 16.1086, lng: 120.5428 },
 };
 
-const DEFAULT_CITY = "Pasig";
+const DEFAULT_CITY = "Lingayen";
 
 const PredictionForm: React.FC<PredictionFormProps> = ({ onSubmit, isLoading }) => {
   const [formData, setFormData] = useState<any>({
@@ -135,26 +103,67 @@ const PredictionForm: React.FC<PredictionFormProps> = ({ onSubmit, isLoading }) 
           </h3>
           <div>
             <label className="block text-sm text-text-secondary mb-1.5">City / Region</label>
-            <select
-              name="City"
-              value={formData.City}
-              onChange={handleChange}
-              className="w-full bg-white/5 border border-white/10 rounded-lg p-3 focus:border-primary focus:ring-1 focus:ring-primary/30 outline-none transition-all text-white"
-            >
-              {PH_CITY_GROUPS.map(group => (
-                <optgroup key={group.region} label={`── ${group.region} ──`} className="bg-[#0d1117] text-text-muted">
-                  {group.cities.map(city => (
-                    <option key={city} value={city} className="bg-[#0d1117] text-white">{city}</option>
-                  ))}
-                </optgroup>
-              ))}
-            </select>
+            <div className="relative">
+              <select
+                name="City"
+                value={formData.City}
+                onChange={handleChange}
+                className="w-full bg-white/5 border border-white/10 rounded-lg p-3 focus:border-primary focus:ring-1 focus:ring-primary/30 outline-none transition-all text-white appearance-none cursor-pointer"
+              >
+                {PH_CITY_GROUPS.map(group => (
+                  <optgroup key={group.region} label={`── ${group.region} ──`} className="bg-[#0d1117] text-text-muted">
+                    {group.cities.map(city => (
+                      <option key={city} value={city} className="bg-[#0d1117] text-white">{city}</option>
+                    ))}
+                  </optgroup>
+                ))}
+              </select>
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none opacity-50">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </div>
             <p className="text-[10px] text-text-muted mt-1.5 flex items-center gap-1">
               <svg className="w-3 h-3 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
               </svg>
               Map auto-centers to selected city · {formData.Latitude.toFixed(4)}°, {formData.Longitude.toFixed(4)}°
             </p>
+          </div>
+        </div>
+
+        {/* Construction Quality & Type */}
+        <div className="space-y-3 md:col-span-2">
+          <h3 className="text-xs font-semibold text-text-secondary uppercase tracking-wider flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-yellow-500 inline-block"></span>
+            Construction Parameters
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm text-text-secondary mb-1.5">Project Standard</label>
+              <select
+                name="Quality"
+                defaultValue="Standard"
+                className="w-full bg-white/5 border border-white/10 rounded-lg p-3 focus:border-primary outline-none text-white"
+              >
+                <option value="Economy" className="bg-[#0d1117]">Economy (Basic Finishes)</option>
+                <option value="Standard" className="bg-[#0d1117]">Standard (Mid-range)</option>
+                <option value="Premium" className="bg-[#0d1117]">Premium (High-end / Luxury)</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm text-text-secondary mb-1.5">Usage Type</label>
+              <select
+                name="Usage"
+                defaultValue="Residential"
+                className="w-full bg-white/5 border border-white/10 rounded-lg p-3 focus:border-primary outline-none text-white"
+              >
+                <option value="Residential" className="bg-[#0d1117]">Residential (Home)</option>
+                <option value="Commercial" className="bg-[#0d1117]">Commercial (Shop/Office)</option>
+                <option value="Industrial" className="bg-[#0d1117]">Industrial (Warehouse)</option>
+              </select>
+            </div>
           </div>
         </div>
 
