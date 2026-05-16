@@ -1,1 +1,1 @@
-# ProphetIQ backend package
+# This file makes 'backend' a Python package.
