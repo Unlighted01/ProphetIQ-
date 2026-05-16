@@ -5,4 +5,4 @@ installCommand = 'pip install -r requirements.txt'
 cmd = "python start.py"
 
 [variables]
-PYTHONPATH = "."
+PYTHONPATH = "/app"

@@ -12,8 +12,8 @@ root_path = str(Path(__file__).parent.parent)
 if root_path not in sys.path:
     sys.path.append(root_path)
 
-print(f"--- RUNNING FROM: {os.getcwd()} ---")
-print(f"--- SYS PATH: {sys.path} ---")
+print(f"--- RUNNING FROM: {os.getcwd()} ---", flush=True)
+print(f"--- SYS PATH: {sys.path} ---", flush=True)
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
