@@ -1,0 +1,32 @@
+# Environments
+.env
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Data and Models
+backend/data/*.csv
+backend/data/*.zip
+backend/ml/*.pkl
+
+# Notebooks
+*.ipynb
+
+# Node / Frontend
+node_modules/
+.next/
+out/
+build/
+.env*.local
+
+# OS
+.DS_Store
+Thumbs.db
