@@ -1,0 +1,30 @@
+from fastapi import APIRouter, HTTPException
+from backend.schemas.property import PropertyFeatures, PredictionResponse
+from backend.services.predictor import predict_price
+
+router = APIRouter(prefix="/predict", tags=["Prediction"])
+
+CONFIDENCE_MARGIN = 0.10  # ±10% price range
+
+
+@router.post("/", response_model=PredictionResponse, summary="Predict House Price")
+async def predict(features: PropertyFeatures):
+    """
+    Submit house features and receive an AI-predicted sale price
+    along with the top contributing SHAP factors.
+    """
+    try:
+        # Convert Pydantic model to dict, using original field aliases
+        features_dict = features.model_dump(by_alias=True)
+
+        price, top_features = predict_price(features_dict)
+
+        return PredictionResponse(
+            predicted_price_php=round(price, 2),
+            price_range_low=round(price * (1 - CONFIDENCE_MARGIN), 2),
+            price_range_high=round(price * (1 + CONFIDENCE_MARGIN), 2),
+            top_features=top_features,
+            model_version="PH-1.0.0",
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Prediction failed: {str(e)}")
