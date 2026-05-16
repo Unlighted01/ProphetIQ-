@@ -58,7 +58,7 @@ async def get_property_advice(request: AdvisorRequest):
     user_prompt = f"""
 {SYSTEM_PROMPT}
 
-Analyze this property for a potential buyer in the Philippines:
+Analyze this property from a construction and engineering perspective for a potential project in {features.City}:
 
 PROPERTY DETAILS:
 - City/Region: {features.City}
@@ -77,14 +77,15 @@ ML PREDICTION RESULTS:
 TOP PRICE DRIVERS (SHAP analysis):
 {shap_text}
 
-Provide your analysis as the requested JSON structure.
+Provide your engineering and site feasibility analysis as the requested JSON structure.
     """
 
     try:
         # Generate content with JSON enforcement
         try:
-            model = genai.GenerativeModel('gemini-1.5-flash')
-            response = model.generate_content(
+            # Use a local instance name to avoid UnboundLocalError with global 'model'
+            active_model = genai.GenerativeModel('gemini-1.5-flash')
+            response = active_model.generate_content(
                 user_prompt,
                 generation_config=genai.types.GenerationConfig(
                     response_mime_type="application/json",
@@ -93,11 +94,11 @@ Provide your analysis as the requested JSON structure.
         except Exception as e:
             print(f"Failed with gemini-1.5-flash, falling back to gemini-pro: {e}")
             # Fallback to older gemini-pro model if 1.5-flash is not available in their region
-            model = genai.GenerativeModel('gemini-pro')
+            active_model = genai.GenerativeModel('gemini-pro')
             
             # gemini-pro does not natively support response_mime_type="application/json", 
             # so we just pass the prompt and let the system prompt enforce JSON
-            response = model.generate_content(user_prompt)
+            response = active_model.generate_content(user_prompt)
 
         response_text = response.text.strip()
         

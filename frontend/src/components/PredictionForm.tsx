@@ -1,50 +1,91 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 interface PredictionFormProps {
   onSubmit: (features: any) => void;
   isLoading: boolean;
+  externalLocation?: { lat: number; lng: number; city: string };
+  onCityChange?: (city: string, lat: number, lng: number) => void;
 }
 
 // ── City Data ────────────────────────────────────────────────────────────────
 // ── Pangasinan Localization ──────────────────────────────────────────────────
+// ── Pangasinan Localization (4 Cities + 44 Municipalities) ──────────────────
 const PH_CITY_GROUPS = [
   {
     region: "Cities",
-    cities: ["Dagupan", "Urdaneta", "San Carlos", "Alaminos"]
+    cities: ["Alaminos", "Dagupan", "San Carlos", "Urdaneta"]
   },
   {
-    region: "Major Municipalities",
-    cities: ["Lingayen", "Calasiao", "Mangaldan", "Manaoag", "Binmaley", "Bayambang", "Malasiqui", "Rosales", "Villasis", "Binalonan", "Tayug", "Mangatarem", "Bolinao", "San Fabian", "Manaoag", "Pozorrubio"]
+    region: "Municipalities (Districts 1-6)",
+    cities: [
+      "Agno", "Aguilar", "Alcala", "Anda", "Asingan", "Balungao", "Bani", "Basista", "Bautista", "Bayambang", 
+      "Binalonan", "Binmaley", "Bolinao", "Bugallon", "Burgos", "Calasiao", "Dasol", "Infanta", "Labrador", 
+      "Laoac", "Lingayen", "Mabini", "Malasiqui", "Manaoag", "Mangaldan", "Mangatarem", "Mapandan", 
+      "Natividad", "Pozorrubio", "Rosales", "San Fabian", "San Jacinto", "San Manuel", "San Nicolas", 
+      "San Quintin", "Santa Barbara", "Santa Maria", "Santo Tomas", "Sison", "Sual", "Tayug", "Umingan", 
+      "Urbiztondo", "Villasis"
+    ]
   }
 ];
 
 const CITY_COORDS: Record<string, { lat: number; lng: number }> = {
-  "Dagupan":     { lat: 16.0433, lng: 120.3333 },
-  "Urdaneta":    { lat: 15.9758, lng: 120.5707 },
-  "San Carlos":  { lat: 15.9272, lng: 120.3489 },
+  // Cities
   "Alaminos":    { lat: 16.1517, lng: 119.9806 },
-  "Lingayen":    { lat: 16.0204, lng: 120.2315 },
-  "Calasiao":    { lat: 16.0075, lng: 120.3586 },
-  "Mangaldan":   { lat: 16.0694, lng: 120.4025 },
-  "Manaoag":     { lat: 16.0426, lng: 120.4878 },
-  "Binmaley":    { lat: 16.0303, lng: 120.2678 },
+  "Dagupan":     { lat: 16.0433, lng: 120.3333 },
+  "San Carlos":  { lat: 15.9272, lng: 120.3489 },
+  "Urdaneta":    { lat: 15.9758, lng: 120.5707 },
+  // Municipalities
+  "Agno":        { lat: 16.1119, lng: 119.7997 },
+  "Aguilar":     { lat: 15.8906, lng: 120.2411 },
+  "Alcala":      { lat: 15.8475, lng: 120.5217 },
+  "Anda":        { lat: 16.2892, lng: 119.9606 },
+  "Asingan":     { lat: 16.0019, lng: 120.6694 },
+  "Balungao":    { lat: 15.8986, lng: 120.6761 },
+  "Bani":        { lat: 16.1836, lng: 119.8631 },
+  "Basista":     { lat: 15.8528, lng: 120.4011 },
+  "Bautista":    { lat: 15.8111, lng: 120.4764 },
   "Bayambang":   { lat: 15.8111, lng: 120.4578 },
-  "Malasiqui":   { lat: 15.9189, lng: 120.4144 },
-  "Rosales":     { lat: 15.8921, lng: 120.6358 },
-  "Villasis":    { lat: 15.9014, lng: 120.5878 },
   "Binalonan":   { lat: 16.0506, lng: 120.5925 },
-  "Tayug":       { lat: 16.0286, lng: 120.7458 },
-  "Mangatarem":  { lat: 15.7892, lng: 120.2911 },
+  "Binmaley":    { lat: 16.0303, lng: 120.2678 },
   "Bolinao":     { lat: 16.3853, lng: 119.8933 },
-  "San Fabian":  { lat: 16.1242, lng: 120.4042 },
+  "Bugallon":    { lat: 15.9556, lng: 120.2175 },
+  "Burgos":      { lat: 16.0600, lng: 119.8700 },
+  "Calasiao":    { lat: 16.0075, lng: 120.3586 },
+  "Dasol":       { lat: 15.9911, lng: 119.8803 },
+  "Infanta":     { lat: 15.8267, lng: 119.9075 },
+  "Labrador":    { lat: 16.0272, lng: 120.1442 },
+  "Laoac":       { lat: 16.0539, lng: 120.5408 },
+  "Lingayen":    { lat: 16.0204, lng: 120.2315 },
+  "Mabini":      { lat: 16.0717, lng: 119.9397 },
+  "Malasiqui":   { lat: 15.9189, lng: 120.4144 },
+  "Manaoag":     { lat: 16.0426, lng: 120.4878 },
+  "Mangaldan":   { lat: 16.0694, lng: 120.4025 },
+  "Mangatarem":  { lat: 15.7892, lng: 120.2911 },
+  "Mapandan":    { lat: 16.0286, lng: 120.4503 },
+  "Natividad":   { lat: 16.0467, lng: 120.7972 },
   "Pozorrubio":  { lat: 16.1086, lng: 120.5428 },
+  "Rosales":     { lat: 15.8921, lng: 120.6358 },
+  "San Fabian":  { lat: 16.1242, lng: 120.4042 },
+  "San Jacinto": { lat: 16.0744, lng: 120.4411 },
+  "San Manuel":  { lat: 16.0653, lng: 120.6672 },
+  "San Nicolas": { lat: 16.0686, lng: 120.7644 },
+  "San Quintin": { lat: 15.9858, lng: 120.8164 },
+  "Santa Barbara": { lat: 16.0019, lng: 120.4022 },
+  "Santa Maria": { lat: 15.9817, lng: 120.6975 },
+  "Santo Tomas": { lat: 15.8753, lng: 120.5842 },
+  "Sison":       { lat: 16.1739, lng: 120.5422 },
+  "Sual":        { lat: 16.0647, lng: 120.1017 },
+  "Tayug":       { lat: 16.0286, lng: 120.7458 },
+  "Umingan":     { lat: 15.8344, lng: 120.7811 },
+  "Urbiztondo":  { lat: 15.8236, lng: 120.3314 },
+  "Villasis":    { lat: 15.9014, lng: 120.5878 },
 };
 
 const DEFAULT_CITY = "Lingayen";
 
-const PredictionForm: React.FC<PredictionFormProps> = ({ onSubmit, isLoading }) => {
+const PredictionForm: React.FC<PredictionFormProps> = ({ onSubmit, isLoading, externalLocation, onCityChange }) => {
   const [formData, setFormData] = useState<any>({
     Bedrooms: '',
     Bath: '',
@@ -56,12 +97,26 @@ const PredictionForm: React.FC<PredictionFormProps> = ({ onSubmit, isLoading }) 
     Longitude: CITY_COORDS[DEFAULT_CITY].lng
   });
 
+  // Sync with map clicks or external changes
+  useEffect(() => {
+    if (externalLocation) {
+      setFormData((prev: any) => ({
+        ...prev,
+        Latitude: externalLocation.lat,
+        Longitude: externalLocation.lng,
+        City: externalLocation.city || prev.City
+      }));
+    }
+  }, [externalLocation]);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
 
     if (name === 'City') {
-      // Auto-update coordinates when city changes
       const coords = CITY_COORDS[value];
+      if (coords && onCityChange) {
+        onCityChange(value, coords.lat, coords.lng);
+      }
       setFormData((prev: any) => ({
         ...prev,
         City: value,

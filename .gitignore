@@ -12,10 +12,10 @@ __pycache__/
 *$py.class
 *.so
 
-# Data and Models
+# Data
 backend/data/*.csv
 backend/data/*.zip
-backend/ml/*.pkl
+# backend/ml/*.pkl (Uncommented for deployment)
 
 # Notebooks
 *.ipynb

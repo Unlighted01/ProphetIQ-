@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
 import PredictionForm from '@/components/PredictionForm';
 import PriceDisplay from '@/components/PriceDisplay';
@@ -22,6 +24,14 @@ export default function Home() {
   const [advisorData, setAdvisorData] = useState<any>(null);
   const [investmentData, setInvestmentData] = useState<any>(null);
   const [lastFeatures, setLastFeatures] = useState<any>(null);
+  
+  // Location state (shared between Form and Map)
+  const [currentLocation, setCurrentLocation] = useState({
+    lat: 16.0204, // Default Lingayen
+    lng: 120.2315,
+    city: 'Lingayen'
+  });
+
   const [isLoading, setIsLoading] = useState(false);
   const [isAdvisorLoading, setIsAdvisorLoading] = useState(false);
   const [isInvestmentLoading, setIsInvestmentLoading] = useState(false);
@@ -36,6 +46,10 @@ export default function Home() {
     getStatus();
   }, []);
 
+  const handleLocationSelect = (lat: number, lng: number) => {
+    setCurrentLocation(prev => ({ ...prev, lat, lng }));
+  };
+
   const handlePredict = async (features: any) => {
     setIsLoading(true);
     setAdvisorData(null);
@@ -43,7 +57,14 @@ export default function Home() {
     setLastFeatures(features);
     setError(null);
     try {
-      const result = await predictPrice(features);
+      // Ensure the prediction uses the latest map-pinned coordinates
+      const finalFeatures = {
+        ...features,
+        Latitude: currentLocation.lat,
+        Longitude: currentLocation.lng
+      };
+      
+      const result = await predictPrice(finalFeatures);
       setPrediction(result);
       
       // Smooth scroll to results
@@ -61,7 +82,7 @@ export default function Home() {
       // Fetch AI Advice immediately after prediction
       setIsAdvisorLoading(true);
       try {
-        const advice = await getAIAdvice(features, result);
+        const advice = await getAIAdvice(finalFeatures, result);
         setAdvisorData(advice);
       } catch (advisorErr) {
         console.error("Advisor failed:", advisorErr);
@@ -96,14 +117,39 @@ export default function Home() {
         </p>
       </header>
 
-      {/* Input Section */}
-      <div className="max-w-4xl mx-auto mb-20">
-        <PredictionForm onSubmit={handlePredict} isLoading={isLoading} />
-        {error && (
-          <div className="mt-6 p-4 bg-danger/10 border border-danger/20 rounded-xl text-danger text-sm font-medium animate-shake">
-            Error: {error}
+      {/* Input Section & Site Selector */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-20">
+        <div className="space-y-6">
+          <PredictionForm 
+            onSubmit={handlePredict} 
+            isLoading={isLoading} 
+            externalLocation={currentLocation}
+            onCityChange={(city, lat, lng) => setCurrentLocation({ city, lat, lng })}
+          />
+          {error && (
+            <div className="p-4 bg-danger/10 border border-danger/20 rounded-xl text-danger text-sm font-medium animate-shake">
+              Error: {error}
+            </div>
+          )}
+        </div>
+        <div className="lg:sticky lg:top-8 h-fit">
+          <MapView 
+            latitude={currentLocation.lat} 
+            longitude={currentLocation.lng} 
+            city={currentLocation.city} 
+            price={prediction?.predicted_price} 
+            onLocationSelect={handleLocationSelect}
+          />
+          <div className="mt-4 p-4 glass rounded-xl border border-yellow-500/20 bg-yellow-500/5">
+            <h4 className="text-xs font-bold text-yellow-500 uppercase tracking-widest mb-2 flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-yellow-500 animate-pulse"></span>
+              Engineering Precision Mode
+            </h4>
+            <p className="text-[10px] text-text-muted leading-relaxed">
+              For accurate construction estimates, select your municipality first, then <span className="text-white font-bold">click on the map</span> to pin-point the exact project site. This adjusts for local terrain and neighborhood valuation factors.
+            </p>
           </div>
-        )}
+        </div>
       </div>
 
       {/* Results / Intelligence Report Section */}
@@ -144,16 +190,6 @@ export default function Home() {
               <InvestmentDashboard 
                 data={investmentData} 
                 isLoading={isInvestmentLoading} 
-              />
-            </div>
-
-            {/* Map & Context */}
-            <div className="grid grid-cols-1 gap-8">
-              <MapView 
-                latitude={lastFeatures?.Latitude || 16.02} 
-                longitude={lastFeatures?.Longitude || 120.23} 
-                city={lastFeatures?.City || 'Lingayen'} 
-                price={prediction.predicted_price} 
               />
             </div>
 
