@@ -160,17 +160,29 @@ The frontend uses **Tailwind CSS v3** with a custom dark theme. Key classes:
 
 ---
 
-### PART 2 — Polishing Phase ⬅️ START HERE
+### PART 2 — Polishing Phase ⬅️ COMPLETE
 
 **Overall goal:** Transform the functional MVP into a fully immersive, premium Philippine real estate platform.
 
 | Task | Description | Priority | Status |
 |------|-------------|----------|--------|
-| 2.1 | City Expansion & Auto-Mapping | 🔴 High | ⬜ Not Started |
-| 2.2 | Recommended Properties Component | 🔴 High | ⬜ Not Started |
-| 2.3 | Contact / Expert Advisor Section | 🟡 Medium | ⬜ Not Started |
-| 2.4 | ML Hyperparameter Tuning + K-Fold CV | 🔴 High | ⬜ Not Started |
-| 2.5 | UI/UX Polish & Staggered Animations | 🟡 Medium | ⬜ Not Started |
+| 2.1 | City Expansion & Auto-Mapping | 🔴 High | ✅ Complete |
+| 2.2 | Recommended Properties Component | 🔴 High | ✅ Complete |
+| 2.3 | Contact / Expert Advisor Section | 🟡 Medium | ✅ Complete |
+| 2.4 | ML Hyperparameter Tuning + K-Fold CV | 🔴 High | ✅ Complete |
+| 2.5 | UI/UX Polish & Staggered Animations | 🟡 Medium | ✅ Complete |
+
+---
+
+## 📋 Agent Changelog
+
+| Date | Agent | Action |
+|------|-------|--------|
+| 2026-05-15 | Antigravity (Google DeepMind) | Initial project build — Phases 1–8, PH localization, ML training, all core components |
+| 2026-05-16 | Antigravity (Google DeepMind) | Switched AI provider to Gemini, added Investment Dashboard, Leaflet Map, fixed form UX, wrote this handoff doc |
+| 2026-05-16 | Antigravity (Google DeepMind) | Completed Part 2 (Polishing): 38-city expansion, auto-mapping, Recommended Properties, Contact Section, and 0.976 R² ML optimization. |
+
+---
 
 #### Task 2.1 — City Expansion & Auto-Mapping
 **Files:** `frontend/src/components/PredictionForm.tsx`
