@@ -3,6 +3,18 @@ ProphetIQ FastAPI Backend
 AI-Powered Real Estate Intelligence Platform
 """
 from contextlib import asynccontextmanager
+import sys
+import os
+from pathlib import Path
+
+# Manual path injection for production environments
+root_path = str(Path(__file__).parent.parent)
+if root_path not in sys.path:
+    sys.path.append(root_path)
+
+print(f"--- RUNNING FROM: {os.getcwd()} ---")
+print(f"--- SYS PATH: {sys.path} ---")
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
