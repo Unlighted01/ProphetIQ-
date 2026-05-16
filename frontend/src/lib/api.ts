@@ -1,4 +1,9 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
+let base = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
+if (base.endsWith('/')) base = base.slice(0, -1);
+if (!base.endsWith('/api/v1') && !base.includes('localhost')) {
+  base += '/api/v1';
+}
+const API_BASE_URL = base;
 
 export async function predictPrice(features: any) {
   try {
