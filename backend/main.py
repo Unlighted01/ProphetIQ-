@@ -34,13 +34,10 @@ app = FastAPI(
 )
 
 # ── CORS ──────────────────────────────────────────────────────────────────────
-# Allow Next.js frontend (dev + prod) to call the API
+# Allow all origins for production deployment to avoid CORS issues
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",   # Next.js dev
-        "https://prophetiq.vercel.app",  # Production (update when deployed)
-    ],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
