@@ -2,7 +2,7 @@
 installCommand = 'pip install -r requirements.txt'
 
 [start]
-cmd = "uvicorn backend.main:app --host 0.0.0.0 --port $PORT --proxy-headers --forwarded-allow-ips='*'"
+cmd = "PYTHONPATH=/app/backend uvicorn backend.main:app --host 0.0.0.0 --port $PORT --proxy-headers --forwarded-allow-ips='*'"
 
 [variables]
 PYTHONPATH = "/app/backend"
