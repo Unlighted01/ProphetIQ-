@@ -2,15 +2,10 @@
 ProphetIQ FastAPI Backend
 AI-Powered Real Estate Intelligence Platform
 """
-from contextlib import asynccontextmanager
-import sys
-import os
-from pathlib import Path
+from routers import predict, advisor, investment
+from schemas.property import HealthResponse
+from services.predictor import load_artifacts, is_model_loaded
 
-# Manual path injection for production environments
-root_path = str(Path(__file__).parent.parent)
-if root_path not in sys.path:
-    sys.path.append(root_path)
 
 print(f"--- RUNNING FROM: {os.getcwd()} ---", flush=True)
 print(f"--- SYS PATH: {sys.path} ---", flush=True)

@@ -2,7 +2,7 @@
 installCommand = 'pip install -r requirements.txt'
 
 [start]
-cmd = "python start.py"
+cmd = "uvicorn main:app --host 0.0.0.0 --port $PORT --proxy-headers --forwarded-allow-ips='*'"
 
 [variables]
 PYTHONPATH = "/app"
