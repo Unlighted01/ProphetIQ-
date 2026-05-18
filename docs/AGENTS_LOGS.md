@@ -313,4 +313,6 @@ After fitting, print `search.best_params_` and cross-val R² score. Re-serialize
 | 2026-05-18 | Antigravity (Google DeepMind) | Fixed 500 error: Removed conflicting per-router SlowAPI Limiter instances in favor of global app state rate-limiting. |
 | 2026-05-18 | Antigravity (Google DeepMind) | Upgraded AI Advisor: Discovered 404 model deprecation using programmatic list_models, upgraded Gemini to `gemini-2.5-flash`, and established dynamic API key resolution. |
 | 2026-05-18 | Antigravity (Google DeepMind) | Finished UI Polish: Added sleek scrollbars with max-height to Advisor's Investment Take and Red Flags to maintain card symmetry. |
+| 2026-05-18 | Antigravity (Google DeepMind) | Launched Phase 3 (Features): Implemented F1 Price Appreciation Area Chart and F10 Dynamic Bank Mortgage Partner Table under a stunning tabbed interface in InvestmentDashboard. |
+
 
