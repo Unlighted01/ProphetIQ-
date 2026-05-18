@@ -22,7 +22,7 @@ def _get_model():
         return None
     try:
         genai.configure(api_key=key)
-        return genai.GenerativeModel("gemini-1.5-flash")
+        return genai.GenerativeModel("gemini-2.5-flash")
     except Exception as e:
         logger.warning(f"Could not initialize Gemini client: {e}")
         return None
@@ -156,7 +156,7 @@ async def diagnose_gemini():
         except Exception as list_err:
             available_models = [f"Failed to list models: {str(list_err)}"]
 
-        model = genai.GenerativeModel("gemini-1.5-flash")
+        model = genai.GenerativeModel("gemini-2.5-flash")
         response = model.generate_content("Say 'Gemini is online!'")
         
         return {
