@@ -14,19 +14,19 @@ router = APIRouter(prefix="/advisor", tags=["Advisor"])
 
 # ─── Gemini setup ─────────────────────────────────────────────────────────────
 
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-
 def _get_model():
     """Return a fresh Gemini model instance, or None if key is missing."""
-    if not GEMINI_API_KEY:
+    key = os.getenv("GEMINI_API_KEY")
+    if not key:
         logger.error("GEMINI_API_KEY is not set in environment variables.")
         return None
     try:
-        genai.configure(api_key=GEMINI_API_KEY)
+        genai.configure(api_key=key)
         return genai.GenerativeModel("gemini-1.5-flash")
     except Exception as e:
         logger.warning(f"Could not initialize Gemini client: {e}")
         return None
+
 
 SYSTEM_PROMPT = """
 You are a Chief Construction Engineer and Site Intelligence Expert for ProphetIQ, a firm operating in Pangasinan, Philippines.
