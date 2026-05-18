@@ -4,8 +4,22 @@
  * Example: https://prophet-iq-production.railway.app
  */
 
-const RAW_BASE = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000").replace(/\/$/, "");
+const RAW_ENV = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+
+// Guard: if the env var is missing the protocol (e.g. "prophetiq-xxx.railway.app"),
+// the browser treats it as a relative path. Always ensure we have a full URL.
+function ensureAbsoluteUrl(url: string): string {
+  const trimmed = url.replace(/\/$/, "");
+  if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
+    return trimmed;
+  }
+  // No protocol — assume HTTPS for production domains
+  return `https://${trimmed}`;
+}
+
+const RAW_BASE = ensureAbsoluteUrl(RAW_ENV);
 const API_BASE_URL = `${RAW_BASE}/api/v1`;
+
 
 // ─── Friendly error messages ───────────────────────────────────────────────
 function humanizeError(status: number, detail?: any): string {
