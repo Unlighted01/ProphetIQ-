@@ -7,6 +7,6 @@ shap
 pandas
 numpy
 httpx
-anthropic
+google-generativeai
 python-dotenv
 joblib
