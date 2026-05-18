@@ -1,99 +1,101 @@
-let base = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
-if (base.endsWith('/')) base = base.slice(0, -1);
-if (!base.endsWith('/api/v1') && !base.includes('localhost')) {
-  base += '/api/v1';
+/**
+ * ProphetIQ API client
+ * Base URL is set via NEXT_PUBLIC_API_URL environment variable in Vercel.
+ * Example: https://prophet-iq-production.railway.app
+ */
+
+const RAW_BASE = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000").replace(/\/$/, "");
+const API_BASE_URL = `${RAW_BASE}/api/v1`;
+
+// ─── Friendly error messages ───────────────────────────────────────────────
+function humanizeError(status: number, detail?: any): string {
+  if (!navigator.onLine) return "You appear to be offline. Check your connection.";
+  if (status === 0 || status === undefined)
+    return "Can't reach the server. It may be starting up — try again in a moment.";
+  if (status === 422) {
+    if (Array.isArray(detail))
+      return "Invalid input: " + detail.map((e: any) => `${e.loc?.slice(-1)[0]}: ${e.msg}`).join(", ");
+    return "Please check your input values and try again.";
+  }
+  if (status === 429) return "Too many requests. Please wait a moment before trying again.";
+  if (status === 500) return "Our prediction model hit an issue. Please try different inputs.";
+  if (status === 503) return "The server is temporarily unavailable. Please try again shortly.";
+  return detail || `Unexpected error (${status}). Please try again.`;
 }
-const API_BASE_URL = base;
+
+async function parseResponse(res: Response) {
+  const contentType = res.headers.get("content-type") || "";
+  if (!contentType.includes("application/json")) {
+    // Got HTML back (e.g., a 404/502 page) — server is not ready
+    throw new Error("Can't reach the server. It may be starting up — try again in a moment.");
+  }
+  return res.json();
+}
+
+// ─── Endpoints ──────────────────────────────────────────────────────────────
 
 export async function predictPrice(features: any) {
-  try {
-    const response = await fetch(`${API_BASE_URL}/predict/`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(features),
-    });
+  const response = await fetch(`${API_BASE_URL}/predict/`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(features),
+  });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      let errorMessage = 'Prediction failed';
-      if (errorData.detail) {
-        if (Array.isArray(errorData.detail)) {
-          errorMessage = errorData.detail.map((e: any) => `${e.loc?.join('.')}: ${e.msg}`).join(', ');
-        } else if (typeof errorData.detail === 'string') {
-          errorMessage = errorData.detail;
-        }
-      }
-      throw new Error(errorMessage);
-    }
+  const data = await parseResponse(response);
 
-    // Handle PHP specific response mapping
-    const data = await response.json();
-    return {
-      ...data,
-      predicted_price: data.predicted_price_php // Alias for existing components
-    };
-  } catch (error) {
-    console.error('API Error:', error);
-    throw error;
+  if (!response.ok) {
+    throw new Error(humanizeError(response.status, data?.detail));
   }
+
+  return {
+    ...data,
+    predicted_price: data.predicted_price_php, // alias for legacy components
+  };
 }
 
 export async function getAIAdvice(features: any, prediction: any) {
-  try {
-    const response = await fetch(`${API_BASE_URL}/advisor/`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        features: features,
-        prediction: prediction
-      }),
-    });
+  const response = await fetch(`${API_BASE_URL}/advisor/`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ features, prediction }),
+  });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.detail || 'Failed to get AI advice');
-    }
+  const data = await parseResponse(response);
 
-    return await response.json();
-  } catch (error) {
-    console.error('Advisor API Error:', error);
-    throw error;
+  if (!response.ok) {
+    throw new Error(humanizeError(response.status, data?.detail));
   }
+
+  return data;
 }
 
 export async function getInvestmentMetrics(price: number) {
-  try {
-    const response = await fetch(`${API_BASE_URL}/investment/`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        predicted_price_php: price
-      }),
-    });
+  const response = await fetch(`${API_BASE_URL}/investment/`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ predicted_price_php: price }),
+  });
 
-    if (!response.ok) {
-      throw new Error('Failed to fetch investment metrics');
-    }
+  const data = await parseResponse(response);
 
-    return await response.json();
-  } catch (error) {
-    console.error('Investment API Error:', error);
-    throw error;
+  if (!response.ok) {
+    throw new Error(humanizeError(response.status, data?.detail));
   }
+
+  return data;
 }
 
 export async function checkHealth() {
   try {
-    const response = await fetch(`${API_BASE_URL.replace('/api/v1', '')}/health`);
-    return await response.json();
-  } catch (error) {
-    console.error('Health check failed:', error);
-    return { status: 'offline' };
+    const response = await fetch(`${RAW_BASE}/health`, {
+      // Short timeout — don't block the page load if Railway is sleeping
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!response.ok) return { status: "offline" };
+    const contentType = response.headers.get("content-type") || "";
+    if (!contentType.includes("application/json")) return { status: "offline" };
+    return response.json();
+  } catch {
+    return { status: "offline" };
   }
 }

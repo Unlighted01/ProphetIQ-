@@ -10,3 +10,4 @@ httpx
 google-generativeai
 python-dotenv
 joblib
+slowapi
