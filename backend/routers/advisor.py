@@ -126,3 +126,39 @@ Provide your engineering and site feasibility analysis as the requested JSON str
             status_code=503,
             detail=f"AI analysis failed: {str(e)[:200]}",
         )
+
+
+@router.get("/diagnose")
+async def diagnose_gemini():
+    """Diagnose the Gemini API setup and connection on the backend."""
+    key = os.getenv("GEMINI_API_KEY")
+    if not key:
+        return {
+            "status": "error",
+            "message": "GEMINI_API_KEY is not set in environment variables.",
+            "keys_in_env": list(os.environ.keys())
+        }
+
+    masked_key = f"{key[:4]}...{key[-4:]}" if len(key) > 8 else "too_short"
+    
+    try:
+        genai.configure(api_key=key)
+        model = genai.GenerativeModel("gemini-1.5-flash")
+        response = model.generate_content("Say 'Gemini is online!'")
+        return {
+            "status": "success",
+            "message": "Gemini connection test passed!",
+            "key_length": len(key),
+            "key_masked": masked_key,
+            "gemini_response": response.text.strip()
+        }
+    except Exception as e:
+        return {
+            "status": "failed",
+            "message": "Failed to connect to Gemini API.",
+            "key_length": len(key),
+            "key_masked": masked_key,
+            "error_type": type(e).__name__,
+            "error_detail": str(e)
+        }
+
