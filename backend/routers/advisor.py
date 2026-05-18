@@ -140,12 +140,12 @@ async def diagnose_gemini():
         }
 
     masked_key = f"{key[:4]}...{key[-4:]}" if len(key) > 8 else "too_short"
+    available_models = []
     
     try:
         genai.configure(api_key=key)
         
         # Get list of supported models
-        available_models = []
         try:
             for m in genai.list_models():
                 available_models.append({
