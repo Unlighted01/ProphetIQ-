@@ -143,13 +143,28 @@ async def diagnose_gemini():
     
     try:
         genai.configure(api_key=key)
+        
+        # Get list of supported models
+        available_models = []
+        try:
+            for m in genai.list_models():
+                available_models.append({
+                    "name": m.name,
+                    "supported_methods": m.supported_generation_methods,
+                    "display_name": m.display_name
+                })
+        except Exception as list_err:
+            available_models = [f"Failed to list models: {str(list_err)}"]
+
         model = genai.GenerativeModel("gemini-1.5-flash")
         response = model.generate_content("Say 'Gemini is online!'")
+        
         return {
             "status": "success",
             "message": "Gemini connection test passed!",
             "key_length": len(key),
             "key_masked": masked_key,
+            "available_models": available_models,
             "gemini_response": response.text.strip()
         }
     except Exception as e:
@@ -158,7 +173,9 @@ async def diagnose_gemini():
             "message": "Failed to connect to Gemini API.",
             "key_length": len(key),
             "key_masked": masked_key,
+            "available_models": available_models,
             "error_type": type(e).__name__,
             "error_detail": str(e)
         }
+
 
