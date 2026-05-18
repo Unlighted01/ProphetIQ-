@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
-from backend.schemas.property import PropertyFeatures, PredictionResponse
-from backend.services.predictor import predict_price
+from schemas.property import PropertyFeatures, PredictionResponse
+from services.predictor import predict_price
 
 router = APIRouter(prefix="/predict", tags=["Prediction"])
 

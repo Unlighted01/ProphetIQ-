@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from backend.schemas.property import InvestmentRequest, InvestmentResponse
+from schemas.property import InvestmentRequest, InvestmentResponse
 
 router = APIRouter(prefix="/investment", tags=["Investment"])
 

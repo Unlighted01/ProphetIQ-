@@ -4,7 +4,7 @@ from fastapi import APIRouter, HTTPException
 import google.generativeai as genai
 from dotenv import load_dotenv
 
-from backend.schemas.property import AdvisorRequest, AdvisorResponse
+from schemas.property import AdvisorRequest, AdvisorResponse
 
 load_dotenv()
 
