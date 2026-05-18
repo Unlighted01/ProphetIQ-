@@ -2,8 +2,6 @@ import os
 import json
 import logging
 from fastapi import APIRouter, HTTPException, Request
-from slowapi import Limiter
-from slowapi.util import get_remote_address
 import google.generativeai as genai
 from dotenv import load_dotenv
 
@@ -11,18 +9,24 @@ from schemas.property import AdvisorRequest, AdvisorResponse
 
 load_dotenv()
 logger = logging.getLogger("prophetiq.advisor")
-limiter = Limiter(key_func=get_remote_address)
 
 router = APIRouter(prefix="/advisor", tags=["Advisor"])
 
-# Configure the Gemini API client
-try:
-    genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-    model = genai.GenerativeModel("gemini-1.5-flash")
-    logger.info("Gemini client initialized successfully.")
-except Exception as e:
-    model = None
-    logger.warning(f"Could not initialize Gemini client: {e}")
+# ─── Gemini setup ─────────────────────────────────────────────────────────────
+
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+
+def _get_model():
+    """Return a fresh Gemini model instance, or None if key is missing."""
+    if not GEMINI_API_KEY:
+        logger.error("GEMINI_API_KEY is not set in environment variables.")
+        return None
+    try:
+        genai.configure(api_key=GEMINI_API_KEY)
+        return genai.GenerativeModel("gemini-1.5-flash")
+    except Exception as e:
+        logger.warning(f"Could not initialize Gemini client: {e}")
+        return None
 
 SYSTEM_PROMPT = """
 You are a Chief Construction Engineer and Site Intelligence Expert for ProphetIQ, a firm operating in Pangasinan, Philippines.
@@ -43,7 +47,7 @@ Always return your response as a valid JSON object matching this exact schema:
   "why_this_price": "explanation of the top 3 price drivers from SHAP data",
   "red_flags": ["specific concern 1", "specific concern 2"],
   "investment_take": "2-3 sentences on investment potential in this specific Philippine city",
-  "recommendation": "BUY", "HOLD", or "AVOID",
+  "recommendation": "BUY or HOLD or AVOID",
   "recommendation_reason": "one sentence explaining the recommendation"
 }
 Only return the JSON. No markdown formatting around it, no conversational filler.
@@ -51,15 +55,25 @@ Only return the JSON. No markdown formatting around it, no conversational filler
 
 
 @router.post("/", response_model=AdvisorResponse)
-@limiter.limit("5/minute")
-async def get_property_advice(request: Request, body: AdvisorRequest):
-    if not model:
-        raise HTTPException(status_code=503, detail="Gemini client is not initialized. Check API key.")
+async def get_property_advice(body: AdvisorRequest):
+    """Get AI-powered construction & investment advice from Gemini."""
+    active_model = _get_model()
+    if not active_model:
+        raise HTTPException(
+            status_code=503,
+            detail="Gemini AI is unavailable. Please ensure GEMINI_API_KEY is set in Railway environment variables.",
+        )
 
     features = body.features
     prediction = body.prediction
 
-    shap_text = "\n".join([f"- {f['feature']}: ₱{f['impact']:+,}" for f in prediction.top_features])
+    # Build prompt
+    try:
+        shap_text = "\n".join(
+            [f"- {f['feature']}: ₱{f['impact']:+,.0f}" for f in (prediction.top_features or [])]
+        )
+    except Exception:
+        shap_text = "(SHAP data unavailable)"
 
     user_prompt = f"""
 {SYSTEM_PROMPT}
@@ -76,9 +90,9 @@ PROPERTY DETAILS:
 - Coordinates: {features.Latitude}, {features.Longitude}
 
 ML PREDICTION RESULTS:
-- Predicted price: ₱{prediction.predicted_price_php:,.2f}
-- Low estimate: ₱{prediction.price_range_low:,.2f}
-- High estimate: ₱{prediction.price_range_high:,.2f}
+- Predicted price: ₱{prediction.predicted_price_php:,.0f}
+- Low estimate: ₱{prediction.price_range_low:,.0f}
+- High estimate: ₱{prediction.price_range_high:,.0f}
 
 TOP PRICE DRIVERS (SHAP analysis):
 {shap_text}
@@ -87,26 +101,19 @@ Provide your engineering and site feasibility analysis as the requested JSON str
     """
 
     try:
-        try:
-            active_model = genai.GenerativeModel("gemini-1.5-flash")
-            response = active_model.generate_content(
-                user_prompt,
-                generation_config=genai.types.GenerationConfig(
-                    response_mime_type="application/json",
-                ),
-            )
-        except Exception as e:
-            logger.warning(f"gemini-1.5-flash failed, falling back to gemini-pro: {e}")
-            active_model = genai.GenerativeModel("gemini-pro")
-            response = active_model.generate_content(user_prompt)
+        response = active_model.generate_content(
+            user_prompt,
+            generation_config=genai.types.GenerationConfig(
+                response_mime_type="application/json",
+            ),
+        )
 
         response_text = response.text.strip()
 
         # Strip markdown fences if present
-        if response_text.startswith("```json"):
-            response_text = response_text[7:]
-        if response_text.startswith("```"):
-            response_text = response_text[3:]
+        for fence in ("```json", "```"):
+            if response_text.startswith(fence):
+                response_text = response_text[len(fence):]
         if response_text.endswith("```"):
             response_text = response_text[:-3]
 
@@ -114,5 +121,8 @@ Provide your engineering and site feasibility analysis as the requested JSON str
         return AdvisorResponse(**parsed)
 
     except Exception as e:
-        logger.error(f"Advisor failed: {e}")
-        raise HTTPException(status_code=500, detail=f"Failed to generate AI advice: {str(e)}")
+        logger.error(f"Gemini advisor failed: {type(e).__name__}: {e}")
+        raise HTTPException(
+            status_code=503,
+            detail=f"AI analysis failed: {str(e)[:200]}",
+        )
