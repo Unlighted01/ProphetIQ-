@@ -3,21 +3,53 @@
 @tailwind utilities;
 
 :root {
-  /* Core Colors */
+  /* --- LIGHT MODE (DEFAULT) --- */
+  --bg-deep: #f4f6f9; /* Rich light blue-grey */
+  --bg-surface: #ffffff;
+  --bg-card: rgba(15, 23, 42, 0.03);
+  
+  --primary: #3b82f6; /* Electric Blue */
+  --secondary: #8b5cf6; /* Vibrant Purple */
+  --accent: #10b981; /* Emerald Green */
+  --danger: #ef4444; /* Red */
+  
+  --text-primary: #0f172a; /* Slate 900 */
+  --text-secondary: #475569; /* Slate 600 */
+  --text-muted: #94a3b8; /* Slate 400 */
+  
+  --border-color: rgba(15, 23, 42, 0.08);
+  --border-glow: rgba(59, 130, 246, 0.25);
+  
+  /* Gradients */
+  --grad-hero: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+  --grad-surface: radial-gradient(circle at top left, rgba(59, 130, 246, 0.06), transparent 40%),
+                  radial-gradient(circle at bottom right, rgba(139, 92, 246, 0.06), transparent 40%);
+  
+  /* Shadows & Glass */
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-blur: blur(16px);
+  --shadow-lg: 0 10px 40px -10px rgba(15, 23, 42, 0.06);
+  
+  /* Typography */
+  --font-main: 'Outfit', 'Inter', system-ui, sans-serif;
+}
+
+:root.dark, .dark {
+  /* --- DARK MODE (OPTION) --- */
   --bg-deep: #050505;
   --bg-surface: #121212;
   --bg-card: rgba(255, 255, 255, 0.03);
   
-  --primary: #3b82f6; /* Electric Blue */
-  --secondary: #8b5cf6; /* Vibrant Purple */
-  --accent: #10b981; /* Emerald Green for positive impact */
-  --danger: #ef4444; /* Red for negative impact */
+  --primary: #3b82f6;
+  --secondary: #8b5cf6;
+  --accent: #10b981;
+  --danger: #ef4444;
   
   --text-primary: #ffffff;
   --text-secondary: #a1a1aa;
   --text-muted: #71717a;
   
-  --border: rgba(255, 255, 255, 0.1);
+  --border-color: rgba(255, 255, 255, 0.1);
   --border-glow: rgba(59, 130, 246, 0.5);
   
   /* Gradients */
@@ -29,9 +61,6 @@
   --glass-bg: rgba(255, 255, 255, 0.05);
   --glass-blur: blur(12px);
   --shadow-lg: 0 10px 40px -10px rgba(0, 0, 0, 0.5);
-  
-  /* Typography */
-  --font-main: 'Outfit', 'Inter', system-ui, sans-serif;
 }
 
 * {
@@ -55,7 +84,7 @@ body {
   background: var(--glass-bg);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-color);
   box-shadow: var(--shadow-lg);
 }
 

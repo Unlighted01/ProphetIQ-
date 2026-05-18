@@ -36,10 +36,29 @@ const MapUpdater: React.FC<{ lat: number; lng: number }> = ({ lat, lng }) => {
   return null;
 };
 
-// Component to handle map clicks
+// Component to handle map interaction (scroll zoom activation on click, deactivation on mouseout)
+const MapInteractionController: React.FC = () => {
+  const map = useMap();
+
+  useMapEvents({
+    click() {
+      map.scrollWheelZoom.enable();
+    },
+    mouseout() {
+      map.scrollWheelZoom.disable();
+    }
+  });
+
+  return null;
+};
+
+// Component to handle right-click location pinning
 const LocationPicker: React.FC<{ onSelect: (lat: number, lng: number) => void }> = ({ onSelect }) => {
   useMapEvents({
-    click(e) {
+    contextmenu(e) {
+      if (e.originalEvent) {
+        e.originalEvent.preventDefault();
+      }
       onSelect(e.latlng.lat, e.latlng.lng);
     },
   });
@@ -61,7 +80,7 @@ const MapView: React.FC<MapViewProps> = ({ latitude, longitude, city, price, onL
         </div>
         {isInteractive && (
           <span className="text-[9px] font-bold text-yellow-500 bg-yellow-500/10 border border-yellow-500/30 px-2 py-1 rounded-full uppercase tracking-widest animate-pulse">
-            Interactive: Click to Pin
+            Right-Click to Pin
           </span>
         )}
       </div>
@@ -78,6 +97,7 @@ const MapView: React.FC<MapViewProps> = ({ latitude, longitude, city, price, onL
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
           <MapUpdater lat={latitude} lng={longitude} />
+          <MapInteractionController />
           {isInteractive && onLocationSelect && (
             <LocationPicker onSelect={onLocationSelect} />
           )}
@@ -100,7 +120,7 @@ const MapView: React.FC<MapViewProps> = ({ latitude, longitude, city, price, onL
       <div className="mt-3 px-4 flex justify-between items-center text-[10px] text-text-muted">
         <p className="flex items-center gap-1">
           <span className="w-2 h-2 rounded-full bg-yellow-500"></span>
-          Drag or click the map to refine the site location for accurate estimation.
+          Click the map once to scroll-zoom. Right-Click anywhere to pin the exact site location.
         </p>
       </div>
     </div>

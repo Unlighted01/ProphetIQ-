@@ -39,13 +39,42 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [serverStatus, setServerStatus] = useState<'online' | 'offline' | 'checking'>('checking');
 
+  // Navigation & Theme States
+  const [isDark, setIsDark] = useState(false);
+  const [showScrollUp, setShowScrollUp] = useState(false);
+
   useEffect(() => {
     async function getStatus() {
       const health = await checkHealth();
       setServerStatus(health.status === 'ok' ? 'online' : 'offline');
     }
     getStatus();
+
+    // Scroll tracker
+    const handleScroll = () => {
+      setShowScrollUp(window.scrollY > 300);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // Theme Sync
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+      setIsDark(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isDark) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
+  }, [isDark]);
 
   const handleLocationSelect = (lat: number, lng: number) => {
     setCurrentLocation((prev) => ({ ...prev, lat, lng }));
@@ -218,7 +247,7 @@ export default function Home() {
           <div className="animate-fade-in space-y-12">
             {/* Report Header */}
             <div className="border-l-4 border-yellow-500 pl-6 py-2">
-              <h2 className="text-3xl font-black text-white tracking-tight">
+              <h2 className="text-3xl font-black text-text-primary tracking-tight">
                 Technical Intelligence Report
               </h2>
               <p className="text-text-muted text-sm uppercase tracking-widest font-bold">
@@ -226,46 +255,78 @@ export default function Home() {
               </p>
             </div>
 
-            {/* Core Metrics Grid */}
+            {/* Smooth Anchor Sub-Navigation */}
+            <div className="sticky top-4 z-40 flex justify-center w-full max-w-xl mx-auto animate-fade-in px-4">
+              <div className="glass flex items-center justify-between p-1 rounded-full border border-border bg-glass-bg shadow-lg backdrop-blur-md w-full gap-1 overflow-x-auto scrollbar-none">
+                {[
+                  { label: 'Overview', id: 'overview' },
+                  { label: 'AI Advisor', id: 'ai-assessment' },
+                  { label: 'Price Drivers', id: 'shap-drivers' },
+                  { label: 'Investment', id: 'investment' },
+                  { label: 'Comparables', id: 'comparables' }
+                ].map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => {
+                      document.getElementById(item.id)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }}
+                    className="px-3.5 py-1.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider text-text-secondary hover:text-text-primary hover:bg-black/5 dark:hover:bg-white/10 transition-all whitespace-nowrap"
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Unified 2-Column Technical Report Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* Left Column: ML & Cost Intelligence */}
               <div className="space-y-8">
-                <PriceDisplay
-                  price={prediction.predicted_price}
-                  low={prediction.price_range_low}
-                  high={prediction.price_range_high}
-                />
+                <div id="overview" className="scroll-mt-24">
+                  <PriceDisplay
+                    price={prediction.predicted_price}
+                    low={prediction.price_range_low}
+                    high={prediction.price_range_high}
+                  />
+                </div>
                 <ConstructionEstimator
                   floorArea={Number(lastFeatures?.['Floor_area (sqm)']) || 0}
                   quality={lastFeatures?.Quality || 'Standard'}
                 />
+                <div id="shap-drivers" className="scroll-mt-24">
+                  <ShapChart features={prediction.top_features} />
+                </div>
               </div>
-              <div className="space-y-8">
-                <AIAdvisorPanel advice={advisorData} isLoading={isAdvisorLoading} />
-                <MaterialCanvassing />
-              </div>
-            </div>
 
-            {/* Analysis Grid 2 */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <ShapChart features={prediction.top_features} />
-              <InvestmentDashboard
-                data={investmentData}
-                isLoading={isInvestmentLoading}
-                predictedPrice={prediction.predicted_price}
-              />
+              {/* Right Column: AI & Investment Intelligence */}
+              <div className="space-y-8">
+                <div id="ai-assessment" className="scroll-mt-24">
+                  <AIAdvisorPanel advice={advisorData} isLoading={isAdvisorLoading} />
+                </div>
+                <MaterialCanvassing />
+                <div id="investment" className="scroll-mt-24">
+                  <InvestmentDashboard
+                    data={investmentData}
+                    isLoading={isInvestmentLoading}
+                    predictedPrice={prediction.predicted_price}
+                  />
+                </div>
+              </div>
             </div>
 
             {/* Market Comparables */}
-            <RecommendedProperties
-              city={lastFeatures?.City}
-              predictedPrice={prediction.predicted_price}
-              bedrooms={Number(lastFeatures?.Bedrooms) || 0}
-              isCondo={Number(lastFeatures?.IsCondo)}
-            />
+            <div id="comparables" className="scroll-mt-24">
+              <RecommendedProperties
+                city={lastFeatures?.City}
+                predictedPrice={prediction.predicted_price}
+                bedrooms={Number(lastFeatures?.Bedrooms) || 0}
+                isCondo={Number(lastFeatures?.IsCondo)}
+              />
+            </div>
           </div>
         ) : (
           !isLoading && (
-            <div className="glass p-20 rounded-3xl border-dashed border-white/5 flex flex-col items-center justify-center text-center space-y-6 opacity-40">
+            <div className="glass p-20 rounded-3xl border-dashed border-border flex flex-col items-center justify-center text-center space-y-6 opacity-40">
               <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center">
                 <svg
                   className="w-10 h-10 text-text-muted"
@@ -282,7 +343,7 @@ export default function Home() {
                 </svg>
               </div>
               <div>
-                <h3 className="text-xl font-bold text-white mb-2">Awaiting Project Data</h3>
+                <h3 className="text-xl font-bold text-text-primary mb-2">Awaiting Project Data</h3>
                 <p className="text-sm text-text-muted max-w-xs">
                   Fill out the construction parameters above to generate your technical site
                   intelligence report.
@@ -297,7 +358,7 @@ export default function Home() {
       <ContactSection />
 
       {/* Footer */}
-      <footer className="mt-32 pt-10 border-t border-white/5 flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0 text-[10px] text-text-muted uppercase tracking-[0.3em] font-bold">
+      <footer className="mt-32 pt-10 border-t border-border flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0 text-[10px] text-text-muted uppercase tracking-[0.3em] font-bold">
         <span>ProphetIQ Engineering &copy; {new Date().getFullYear()}</span>
         <div className="flex space-x-6">
           <a href="/docs" className="hover:text-primary transition-colors">
@@ -316,6 +377,52 @@ export default function Home() {
           </a>
         </div>
       </footer>
+
+      {/* Floating Action Console */}
+      <div className="fixed bottom-6 right-6 z-50 flex flex-col items-center gap-3">
+        <div className="glass flex flex-col items-center p-2 rounded-2xl border border-border bg-glass-bg shadow-2xl backdrop-blur-md gap-2">
+          {/* Scroll to Top */}
+          {showScrollUp && (
+            <button
+              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+              className="w-10 h-10 rounded-xl bg-primary/10 hover:bg-primary/20 flex items-center justify-center transition-all group active:scale-95"
+              title="Scroll to Top"
+            >
+              <svg className="w-5 h-5 text-primary group-hover:-translate-y-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 10l7-7m0 0l7 7m-7-7v18" />
+              </svg>
+            </button>
+          )}
+
+          {/* Theme Toggle */}
+          <button
+            onClick={() => setIsDark(!isDark)}
+            className="w-10 h-10 rounded-xl bg-white/5 hover:bg-black/5 dark:hover:bg-white/10 flex items-center justify-center transition-all active:scale-95"
+            title={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
+          >
+            {isDark ? (
+              <svg className="w-5 h-5 text-yellow-500 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-11.314l.707.707m11.314 11.314l.707-.707M12 5a7 7 0 100 14 7 7 0 000-14z" />
+              </svg>
+            ) : (
+              <svg className="w-5 h-5 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+              </svg>
+            )}
+          </button>
+
+          {/* Scroll to Bottom */}
+          <button
+            onClick={() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })}
+            className="w-10 h-10 rounded-xl bg-primary/10 hover:bg-primary/20 flex items-center justify-center transition-all group active:scale-95"
+            title="Scroll to Bottom"
+          >
+            <svg className="w-5 h-5 text-primary group-hover:translate-y-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+            </svg>
+          </button>
+        </div>
+      </div>
     </main>
   );
 }

@@ -163,12 +163,12 @@ const PredictionForm: React.FC<PredictionFormProps> = ({ onSubmit, isLoading, ex
                 name="City"
                 value={formData.City}
                 onChange={handleChange}
-                className="w-full bg-white/5 border border-white/10 rounded-lg p-3 focus:border-primary focus:ring-1 focus:ring-primary/30 outline-none transition-all text-white appearance-none cursor-pointer"
+                className="w-full bg-white/5 border border-white/10 rounded-lg p-3 focus:border-primary focus:ring-1 focus:ring-primary/30 outline-none transition-all text-text-primary appearance-none cursor-pointer"
               >
                 {PH_CITY_GROUPS.map(group => (
-                  <optgroup key={group.region} label={`── ${group.region} ──`} className="bg-[#0d1117] text-text-muted">
+                  <optgroup key={group.region} label={`── ${group.region} ──`} className="bg-bg-surface text-text-secondary">
                     {group.cities.map(city => (
-                      <option key={city} value={city} className="bg-[#0d1117] text-white">{city}</option>
+                      <option key={city} value={city} className="bg-bg-surface text-text-primary">{city}</option>
                     ))}
                   </optgroup>
                 ))}
@@ -200,11 +200,11 @@ const PredictionForm: React.FC<PredictionFormProps> = ({ onSubmit, isLoading, ex
               <select
                 name="Quality"
                 defaultValue="Standard"
-                className="w-full bg-white/5 border border-white/10 rounded-lg p-3 focus:border-primary outline-none text-white"
+                className="w-full bg-white/5 border border-white/10 rounded-lg p-3 focus:border-primary outline-none text-text-primary"
               >
-                <option value="Economy" className="bg-[#0d1117]">Economy (Basic Finishes)</option>
-                <option value="Standard" className="bg-[#0d1117]">Standard (Mid-range)</option>
-                <option value="Premium" className="bg-[#0d1117]">Premium (High-end / Luxury)</option>
+                <option value="Economy" className="bg-bg-surface text-text-primary">Economy (Basic Finishes)</option>
+                <option value="Standard" className="bg-bg-surface text-text-primary">Standard (Mid-range)</option>
+                <option value="Premium" className="bg-bg-surface text-text-primary">Premium (High-end / Luxury)</option>
               </select>
             </div>
             <div>
@@ -212,11 +212,11 @@ const PredictionForm: React.FC<PredictionFormProps> = ({ onSubmit, isLoading, ex
               <select
                 name="Usage"
                 defaultValue="Residential"
-                className="w-full bg-white/5 border border-white/10 rounded-lg p-3 focus:border-primary outline-none text-white"
+                className="w-full bg-white/5 border border-white/10 rounded-lg p-3 focus:border-primary outline-none text-text-primary"
               >
-                <option value="Residential" className="bg-[#0d1117]">Residential (Home)</option>
-                <option value="Commercial" className="bg-[#0d1117]">Commercial (Shop/Office)</option>
-                <option value="Industrial" className="bg-[#0d1117]">Industrial (Warehouse)</option>
+                <option value="Residential" className="bg-bg-surface text-text-primary">Residential (Home)</option>
+                <option value="Commercial" className="bg-bg-surface text-text-primary">Commercial (Shop/Office)</option>
+                <option value="Industrial" className="bg-bg-surface text-text-primary">Industrial (Warehouse)</option>
               </select>
             </div>
           </div>
@@ -238,7 +238,7 @@ const PredictionForm: React.FC<PredictionFormProps> = ({ onSubmit, isLoading, ex
               value={formData['Floor_area (sqm)']}
               onChange={handleChange}
               min={0}
-              className="w-full bg-white/5 border border-white/10 rounded-lg p-3 focus:border-primary focus:ring-1 focus:ring-primary/30 outline-none transition-all text-white placeholder:text-white/20"
+              className="w-full bg-white/5 border border-white/10 rounded-lg p-3 focus:border-primary focus:ring-1 focus:ring-primary/30 outline-none transition-all text-text-primary placeholder:text-text-muted/30"
             />
           </div>
           
@@ -254,7 +254,7 @@ const PredictionForm: React.FC<PredictionFormProps> = ({ onSubmit, isLoading, ex
               value={formData['Land_area (sqm)']}
               onChange={handleChange}
               min={0}
-              className="w-full bg-white/5 border border-white/10 rounded-lg p-3 focus:border-primary focus:ring-1 focus:ring-primary/30 outline-none transition-all text-white placeholder:text-white/20"
+              className="w-full bg-white/5 border border-white/10 rounded-lg p-3 focus:border-primary focus:ring-1 focus:ring-primary/30 outline-none transition-all text-text-primary placeholder:text-text-muted/30"
             />
           </div>
         </div>
@@ -276,7 +276,7 @@ const PredictionForm: React.FC<PredictionFormProps> = ({ onSubmit, isLoading, ex
                 value={formData.Bedrooms}
                 onChange={handleChange}
                 min={0}
-                className="w-full bg-white/5 border border-white/10 rounded-lg p-3 focus:border-primary focus:ring-1 focus:ring-primary/30 outline-none transition-all text-white placeholder:text-white/20"
+                className="w-full bg-white/5 border border-white/10 rounded-lg p-3 focus:border-primary focus:ring-1 focus:ring-primary/30 outline-none transition-all text-text-primary placeholder:text-text-muted/30"
               />
             </div>
             <div>
@@ -288,7 +288,7 @@ const PredictionForm: React.FC<PredictionFormProps> = ({ onSubmit, isLoading, ex
                 value={formData.Bath}
                 onChange={handleChange}
                 min={0}
-                className="w-full bg-white/5 border border-white/10 rounded-lg p-3 focus:border-primary focus:ring-1 focus:ring-primary/30 outline-none transition-all text-white placeholder:text-white/20"
+                className="w-full bg-white/5 border border-white/10 rounded-lg p-3 focus:border-primary focus:ring-1 focus:ring-primary/30 outline-none transition-all text-text-primary placeholder:text-text-muted/30"
               />
             </div>
           </div>
@@ -299,10 +299,10 @@ const PredictionForm: React.FC<PredictionFormProps> = ({ onSubmit, isLoading, ex
               name="IsCondo"
               value={formData.IsCondo}
               onChange={handleChange}
-              className="w-full bg-white/5 border border-white/10 rounded-lg p-3 focus:border-primary focus:ring-1 focus:ring-primary/30 outline-none transition-all text-white"
+              className="w-full bg-white/5 border border-white/10 rounded-lg p-3 focus:border-primary focus:ring-1 focus:ring-primary/30 outline-none transition-all text-text-primary"
             >
-              <option value={1} className="bg-[#0d1117]">🏢 Condo / Apartment</option>
-              <option value={0} className="bg-[#0d1117]">🏡 House &amp; Lot / Townhouse</option>
+              <option value={1} className="bg-bg-surface text-text-primary">🏢 Condo / Apartment</option>
+              <option value={0} className="bg-bg-surface text-text-primary">🏡 House &amp; Lot / Townhouse</option>
             </select>
           </div>
         </div>
