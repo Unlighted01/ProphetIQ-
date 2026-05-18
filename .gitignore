@@ -30,3 +30,6 @@ build/
 # OS
 .DS_Store
 Thumbs.db
+
+# Agent Logs
+docs/AGENTS_LOGS.md
