@@ -32,8 +32,8 @@ function humanizeError(status: number, detail?: any): string {
     return "Please check your input values and try again.";
   }
   if (status === 429) return "Too many requests. Please wait a moment before trying again.";
-  if (status === 500) return "Our prediction model hit an issue. Please try different inputs.";
-  if (status === 503) return "The server is temporarily unavailable. Please try again shortly.";
+  if (status === 500) return detail || "Our prediction model hit an issue. Please try different inputs.";
+  if (status === 503) return detail || "The server is temporarily unavailable. Please try again shortly.";
   return detail || `Unexpected error (${status}). Please try again.`;
 }
 
