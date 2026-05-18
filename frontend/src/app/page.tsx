@@ -248,7 +248,11 @@ export default function Home() {
             {/* Analysis Grid 2 */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               <ShapChart features={prediction.top_features} />
-              <InvestmentDashboard data={investmentData} isLoading={isInvestmentLoading} />
+              <InvestmentDashboard
+                data={investmentData}
+                isLoading={isInvestmentLoading}
+                predictedPrice={prediction.predicted_price}
+              />
             </div>
 
             {/* Market Comparables */}
