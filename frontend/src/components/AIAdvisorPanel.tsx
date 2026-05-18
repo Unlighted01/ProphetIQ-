@@ -2,7 +2,7 @@ import React from 'react';
 
 interface AIAdvisorProps {
   advice: {
-    summary: string;
+    summary?: string;          // optional — Gemini doesn't always return it
     why_this_price: string;
     red_flags: string[];
     investment_take: string;
@@ -12,101 +12,101 @@ interface AIAdvisorProps {
   isLoading: boolean;
 }
 
+const RECOMMENDATION_STYLES: Record<string, { badge: string; glow: string; icon: string; label: string }> = {
+  BUY:   { badge: 'bg-accent/20 text-accent border-accent/50',    glow: 'shadow-[0_0_20px_rgba(16,185,129,0.25)]',  icon: '✓', label: 'BUY'   },
+  HOLD:  { badge: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/50', glow: 'shadow-[0_0_20px_rgba(234,179,8,0.25)]',    icon: '⏸', label: 'HOLD'  },
+  AVOID: { badge: 'bg-danger/20 text-danger border-danger/50',    glow: 'shadow-[0_0_20px_rgba(239,68,68,0.25)]',   icon: '✕', label: 'AVOID' },
+};
+
 const AIAdvisorPanel: React.FC<AIAdvisorProps> = ({ advice, isLoading }) => {
   if (isLoading) {
     return (
-      <div className="glass p-8 rounded-2xl animate-fade-in mt-6 border border-white/5 relative overflow-hidden">
-        {/* Shimmer effect */}
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent shimmer-animation z-0"></div>
-        
-        <div className="relative z-10 flex items-center mb-6">
-          <div className="w-8 h-8 rounded-full bg-white/10 animate-pulse mr-3"></div>
-          <h3 className="text-xl font-bold text-white/50">Gemini AI is analyzing...</h3>
+      <div className="glass p-8 rounded-2xl border border-white/5 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-pulse" />
+        <div className="relative z-10 flex items-center gap-3 mb-6">
+          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-secondary animate-pulse" />
+          <div className="space-y-1">
+            <div className="h-3 w-40 bg-white/10 rounded animate-pulse" />
+            <div className="h-2 w-24 bg-white/5 rounded animate-pulse" />
+          </div>
         </div>
-        
-        <div className="space-y-4">
-          <div className="h-4 bg-white/10 rounded w-3/4 animate-pulse"></div>
-          <div className="h-4 bg-white/10 rounded w-full animate-pulse"></div>
-          <div className="h-4 bg-white/10 rounded w-5/6 animate-pulse"></div>
+        <div className="space-y-3">
+          <div className="h-3 bg-white/10 rounded w-full animate-pulse" />
+          <div className="h-3 bg-white/10 rounded w-5/6 animate-pulse" />
+          <div className="h-3 bg-white/10 rounded w-4/6 animate-pulse" />
         </div>
+        <p className="mt-6 text-xs text-text-muted animate-pulse">Gemini AI is analyzing your property...</p>
       </div>
     );
   }
 
   if (!advice) return null;
 
-  // Recommendation Badge Styling
-  let badgeColor = "bg-white/10 text-white";
-  let badgeGlow = "shadow-none";
-  if (advice.recommendation.toUpperCase() === "BUY") {
-    badgeColor = "bg-accent/20 text-accent border border-accent/50";
-    badgeGlow = "shadow-[0_0_15px_rgba(16,185,129,0.3)]";
-  } else if (advice.recommendation.toUpperCase() === "HOLD") {
-    badgeColor = "bg-yellow-500/20 text-yellow-400 border border-yellow-500/50";
-    badgeGlow = "shadow-[0_0_15px_rgba(234,179,8,0.3)]";
-  } else if (advice.recommendation.toUpperCase() === "AVOID") {
-    badgeColor = "bg-danger/20 text-danger border border-danger/50";
-    badgeGlow = "shadow-[0_0_15px_rgba(239,68,68,0.3)]";
-  }
+  const rec = advice.recommendation?.toUpperCase() as keyof typeof RECOMMENDATION_STYLES;
+  const style = RECOMMENDATION_STYLES[rec] ?? RECOMMENDATION_STYLES['HOLD'];
 
   return (
-    <div className="glass p-8 rounded-2xl mt-6 animate-fade-in border border-white/10 relative overflow-hidden">
-      {/* Decorative gradient blob */}
-      <div className="absolute -top-24 -right-24 w-48 h-48 bg-primary/20 rounded-full blur-[60px] pointer-events-none"></div>
+    <div className={`glass p-8 rounded-2xl border border-white/10 animate-fade-in relative overflow-hidden ${style.glow}`}>
+      {/* Decorative blob */}
+      <div className="absolute -top-20 -right-20 w-48 h-48 bg-primary/15 rounded-full blur-[60px] pointer-events-none" />
 
-      <div className="flex justify-between items-start mb-6">
-        <div className="flex items-center">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center mr-3 shadow-[0_0_10px_rgba(59,130,246,0.5)]">
+      {/* Header */}
+      <div className="flex justify-between items-start mb-6 relative z-10">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-[0_0_12px_rgba(59,130,246,0.5)] flex-shrink-0">
             <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
             </svg>
           </div>
-          <h3 className="text-xl font-bold text-white tracking-tight">AI Advisor <span className="text-sm font-normal text-text-muted ml-2">by Gemini</span></h3>
+          <div>
+            <h3 className="text-lg font-bold text-white leading-tight">AI Advisor</h3>
+            <p className="text-[10px] text-text-muted uppercase tracking-widest">Powered by Gemini</p>
+          </div>
         </div>
-        
-        <div className={`px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest ${badgeColor} ${badgeGlow}`}>
-          {advice.recommendation}
+
+        <div className={`flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest border ${style.badge}`}>
+          <span>{style.icon}</span>
+          <span>{style.label}</span>
         </div>
       </div>
 
-      <div className="space-y-6">
-        <div>
-          <p className="text-text-primary leading-relaxed text-sm">
-            <span className="font-semibold text-white">Summary: </span> 
-            {advice.summary}
-          </p>
-        </div>
+      {/* Recommendation reason — prominent */}
+      <div className="relative z-10 bg-white/5 rounded-xl p-4 border border-white/10 mb-5">
+        <p className="text-sm text-white leading-relaxed font-medium">{advice.recommendation_reason}</p>
+      </div>
 
+      <div className="space-y-4 relative z-10">
+        {/* Why this price */}
         <div className="bg-white/5 rounded-xl p-4 border border-white/5">
-          <h4 className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-2">Why This Price?</h4>
-          <p className="text-sm text-text-primary leading-relaxed">
-            {advice.why_this_price}
-          </p>
+          <h4 className="text-[10px] font-bold text-text-secondary uppercase tracking-widest mb-2">
+            💡 Why This Price?
+          </h4>
+          <p className="text-sm text-text-primary leading-relaxed">{advice.why_this_price}</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* Investment take */}
           <div className="bg-white/5 rounded-xl p-4 border border-white/5">
-            <h4 className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-2 flex items-center">
-              <span className="w-2 h-2 rounded-full bg-primary mr-2"></span>
+            <h4 className="text-[10px] font-bold text-accent uppercase tracking-widest mb-2 flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-accent" />
               Investment Take
             </h4>
-            <p className="text-sm text-text-primary leading-relaxed">
-              {advice.investment_take}
-            </p>
-            <p className="text-xs font-medium text-white mt-3 pt-3 border-t border-white/10">
-              {advice.recommendation_reason}
-            </p>
+            <p className="text-sm text-text-primary leading-relaxed">{advice.investment_take}</p>
           </div>
 
+          {/* Red flags */}
           <div className="bg-danger/5 rounded-xl p-4 border border-danger/20">
-            <h4 className="text-xs font-semibold text-danger uppercase tracking-wider mb-2 flex items-center">
-              <span className="w-2 h-2 rounded-full bg-danger mr-2"></span>
+            <h4 className="text-[10px] font-bold text-danger uppercase tracking-widest mb-2 flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-danger" />
               Red Flags
             </h4>
-            {advice.red_flags.length > 0 ? (
-              <ul className="text-sm text-text-primary space-y-2 list-disc list-inside">
+            {advice.red_flags && advice.red_flags.length > 0 ? (
+              <ul className="space-y-1.5">
                 {advice.red_flags.map((flag, i) => (
-                  <li key={i}>{flag}</li>
+                  <li key={i} className="text-sm text-text-primary flex items-start gap-2">
+                    <span className="text-danger mt-0.5 flex-shrink-0">▸</span>
+                    <span>{flag}</span>
+                  </li>
                 ))}
               </ul>
             ) : (
