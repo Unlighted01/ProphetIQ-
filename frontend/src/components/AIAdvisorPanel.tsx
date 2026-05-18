@@ -91,7 +91,9 @@ const AIAdvisorPanel: React.FC<AIAdvisorProps> = ({ advice, isLoading }) => {
               <span className="w-1.5 h-1.5 rounded-full bg-accent" />
               Investment Take
             </h4>
-            <p className="text-sm text-text-primary leading-relaxed">{advice.investment_take}</p>
+            <div className="overflow-y-auto max-h-[160px] pr-1">
+              <p className="text-sm text-text-primary leading-relaxed">{advice.investment_take}</p>
+            </div>
           </div>
 
           {/* Red flags */}
@@ -100,18 +102,20 @@ const AIAdvisorPanel: React.FC<AIAdvisorProps> = ({ advice, isLoading }) => {
               <span className="w-1.5 h-1.5 rounded-full bg-danger" />
               Red Flags
             </h4>
-            {advice.red_flags && advice.red_flags.length > 0 ? (
-              <ul className="space-y-1.5">
-                {advice.red_flags.map((flag, i) => (
-                  <li key={i} className="text-sm text-text-primary flex items-start gap-2">
-                    <span className="text-danger mt-0.5 flex-shrink-0">▸</span>
-                    <span>{flag}</span>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-sm text-text-muted italic">No major red flags detected.</p>
-            )}
+            <div className="overflow-y-auto max-h-[160px] pr-1">
+              {advice.red_flags && advice.red_flags.length > 0 ? (
+                <ul className="space-y-1.5">
+                  {advice.red_flags.map((flag, i) => (
+                    <li key={i} className="text-sm text-text-primary flex items-start gap-2">
+                      <span className="text-danger mt-0.5 flex-shrink-0">▸</span>
+                      <span>{flag}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-sm text-text-muted italic">No major red flags detected.</p>
+              )}
+            </div>
           </div>
         </div>
       </div>
