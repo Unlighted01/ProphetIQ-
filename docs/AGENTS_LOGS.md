@@ -306,4 +306,11 @@ After fitting, print `search.best_params_` and cross-val R² score. Re-serialize
 |------|-------|--------|
 | 2026-05-15 | Antigravity (Google DeepMind) | Initial project build — Phases 1–8, PH localization, ML training, all core components |
 | 2026-05-16 | Antigravity (Google DeepMind) | Switched AI provider to Gemini, added Investment Dashboard, Leaflet Map, fixed form UX, wrote this handoff doc |
-| *(next agent)* | *(your name)* | *(what you did)* |
+| 2026-05-16 | Antigravity (Google DeepMind) | Completed Part 2 (Polishing): 38-city expansion, auto-mapping, Recommended Properties, Contact Section, and 0.976 R² ML optimization. |
+| 2026-05-18 | Antigravity (Google DeepMind) | Resolved Procfile/Nixpacks absolute PYTHONPATH conflicts and relative imports to fix backend container startup. |
+| 2026-05-18 | Antigravity (Google DeepMind) | Hardened security: Locked down CORS to production Vercel/localhost, added Pydantic range validation, and configured Next.js security headers (HSTS, nosniff, DENY). |
+| 2026-05-18 | Antigravity (Google DeepMind) | Polished UX: Integrated glassmorphic Sonner toast alerts, confidence interval bar in PriceDisplay, parallelized API fetches, and card-based SHAP layout. |
+| 2026-05-18 | Antigravity (Google DeepMind) | Fixed 500 error: Removed conflicting per-router SlowAPI Limiter instances in favor of global app state rate-limiting. |
+| 2026-05-18 | Antigravity (Google DeepMind) | Upgraded AI Advisor: Discovered 404 model deprecation using programmatic list_models, upgraded Gemini to `gemini-2.5-flash`, and established dynamic API key resolution. |
+| 2026-05-18 | Antigravity (Google DeepMind) | Finished UI Polish: Added sleek scrollbars with max-height to Advisor's Investment Take and Red Flags to maintain card symmetry. |
+
