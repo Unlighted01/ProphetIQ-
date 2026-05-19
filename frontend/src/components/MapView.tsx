@@ -76,7 +76,7 @@ const MapView: React.FC<MapViewProps> = ({ latitude, longitude, city, price, onL
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
           </div>
-          <h3 className="text-xl font-bold text-white tracking-tight">Project Site Intelligence</h3>
+          <h3 className="text-xl font-bold text-text-primary tracking-tight">Project Site Intelligence</h3>
         </div>
         {isInteractive && (
           <span className="text-[9px] font-bold text-yellow-500 bg-yellow-500/10 border border-yellow-500/30 px-2 py-1 rounded-full uppercase tracking-widest animate-pulse">

@@ -57,7 +57,7 @@ const MetricCard: React.FC<{
     style={{ animationDelay: `${delay}ms` }}
   >
     <span className="block text-[10px] text-text-muted uppercase tracking-wider mb-2">{label}</span>
-    <span className="text-2xl font-black text-white tabular-nums">{value}</span>
+    <span className="text-2xl font-black text-text-primary tabular-nums">{value}</span>
     {sub && subValue && (
       <div className="flex items-center justify-between mt-2 pt-2 border-t border-white/10">
         <span className="text-[10px] text-text-muted">{sub}</span>
@@ -144,7 +144,7 @@ const InvestmentDashboard: React.FC<InvestmentDashboardProps> = ({ data, isLoadi
             </svg>
           </div>
           <div>
-            <h3 className="text-lg font-bold text-white leading-tight">Investment Analysis</h3>
+            <h3 className="text-lg font-bold text-text-primary leading-tight">Investment Analysis</h3>
             <p className="text-[10px] text-text-muted uppercase tracking-widest">20% Down • 20Yr Term Amortization</p>
           </div>
         </div>
@@ -303,12 +303,12 @@ const InvestmentDashboard: React.FC<InvestmentDashboardProps> = ({ data, isLoadi
                   {bankRates.map((bank, index) => (
                     <tr key={index} className="hover:bg-white/5 transition-colors">
                       <td className="py-2 flex items-center gap-2">
-                        <span className="font-extrabold text-sm text-white">{bank.name}</span>
+                        <span className="font-extrabold text-sm text-text-primary">{bank.name}</span>
                         <span className="text-[8px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-accent font-semibold uppercase tracking-wider">{bank.tag}</span>
                       </td>
                       <td className="py-2 text-center text-xs font-semibold text-text-primary">{bank.rate}%</td>
                       <td className="py-2 text-center text-xs text-text-secondary">{bank.tenure}</td>
-                      <td className="py-2 text-right text-sm font-extrabold text-white tabular-nums">{phpFmt(bank.payment)}</td>
+                      <td className="py-2 text-right text-sm font-extrabold text-text-primary tabular-nums">{phpFmt(bank.payment)}</td>
                     </tr>
                   ))}
                 </tbody>

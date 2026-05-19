@@ -170,7 +170,7 @@ const PredictionForm: React.FC<PredictionFormProps> = ({ onSubmit, isLoading, ex
                 {PH_CITY_GROUPS.map(group => (
                   <optgroup key={group.region} label={`── ${group.region} ──`} className="bg-bg-surface text-text-secondary">
                     {group.cities.map(city => (
-                      <option key={city} value={city} className="bg-bg-surface text-text-primary">{city}</option>
+                      <option key={city} value={city}>{city}</option>
                     ))}
                   </optgroup>
                 ))}
@@ -205,9 +205,9 @@ const PredictionForm: React.FC<PredictionFormProps> = ({ onSubmit, isLoading, ex
                 onChange={handleChange}
                 className="w-full bg-white/5 border border-white/10 rounded-lg p-3 focus:border-primary outline-none text-text-primary"
               >
-                <option value="Economy" className="bg-bg-surface text-text-primary">Economy (Basic Finishes)</option>
-                <option value="Standard" className="bg-bg-surface text-text-primary">Standard (Mid-range)</option>
-                <option value="Premium" className="bg-bg-surface text-text-primary">Premium (High-end / Luxury)</option>
+                <option value="Economy">Economy (Basic Finishes)</option>
+                <option value="Standard">Standard (Mid-range)</option>
+                <option value="Premium">Premium (High-end / Luxury)</option>
               </select>
             </div>
             <div>
@@ -218,9 +218,9 @@ const PredictionForm: React.FC<PredictionFormProps> = ({ onSubmit, isLoading, ex
                 onChange={handleChange}
                 className="w-full bg-white/5 border border-white/10 rounded-lg p-3 focus:border-primary outline-none text-text-primary"
               >
-                <option value="Residential" className="bg-bg-surface text-text-primary">Residential (Home)</option>
-                <option value="Commercial" className="bg-bg-surface text-text-primary">Commercial (Shop/Office)</option>
-                <option value="Industrial" className="bg-bg-surface text-text-primary">Industrial (Warehouse)</option>
+                <option value="Residential">Residential (Home)</option>
+                <option value="Commercial">Commercial (Shop/Office)</option>
+                <option value="Industrial">Industrial (Warehouse)</option>
               </select>
             </div>
           </div>
@@ -305,8 +305,8 @@ const PredictionForm: React.FC<PredictionFormProps> = ({ onSubmit, isLoading, ex
               onChange={handleChange}
               className="w-full bg-white/5 border border-white/10 rounded-lg p-3 focus:border-primary focus:ring-1 focus:ring-primary/30 outline-none transition-all text-text-primary"
             >
-              <option value={1} className="bg-bg-surface text-text-primary">🏢 Condo / Apartment</option>
-              <option value={0} className="bg-bg-surface text-text-primary">🏡 House &amp; Lot / Townhouse</option>
+              <option value={1}>🏢 Condo / Apartment</option>
+              <option value={0}>🏡 House &amp; Lot / Townhouse</option>
             </select>
           </div>
         </div>

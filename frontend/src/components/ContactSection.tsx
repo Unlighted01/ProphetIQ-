@@ -15,7 +15,7 @@ const ContactSection: React.FC = () => {
             Pangasinan Partner Network
           </span>
           
-          <h2 className="text-3xl md:text-5xl font-black text-white tracking-tight leading-tight">
+          <h2 className="text-3xl md:text-5xl font-black text-text-primary tracking-tight leading-tight">
             Speak to a <span className="text-gradient">Local Property Expert</span>
           </h2>
           

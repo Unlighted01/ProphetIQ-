@@ -46,6 +46,16 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${inter.variable} ${outfit.variable}`}>
+      <head>
+        <script dangerouslySetInnerHTML={{
+          __html: `
+            try {
+              const t = localStorage.getItem('theme') || 'dark';
+              document.documentElement.dataset.theme = t;
+            } catch(e) {}
+          `
+        }} />
+      </head>
       <body>
         {children}
         <Toaster

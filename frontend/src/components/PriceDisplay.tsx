@@ -44,7 +44,7 @@ const PriceDisplay: React.FC<PriceDisplayProps> = ({ price, low, high }) => {
       </span>
 
       {/* Main price */}
-      <div className="text-5xl sm:text-6xl font-black text-white tracking-tighter relative z-10 tabular-nums">
+      <div className="text-5xl sm:text-6xl font-black text-text-primary tracking-tighter relative z-10 tabular-nums">
         ₱{fmt(displayPrice)}
       </div>
 

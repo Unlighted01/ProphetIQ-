@@ -109,7 +109,7 @@ export default function Home() {
   const [serverStatus, setServerStatus] = useState<'online' | 'offline' | 'checking'>('checking');
 
   // Navigation & Theme States
-  const [isDark, setIsDark] = useState(false);
+  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
   const [showScrollUp, setShowScrollUp] = useState(false);
 
   useEffect(() => {
@@ -127,23 +127,24 @@ export default function Home() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Theme Sync
+  // Theme Sync on Mount
   useEffect(() => {
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme === 'dark') {
-      setIsDark(true);
+    const savedTheme = localStorage.getItem('theme') as 'dark' | 'light' | null;
+    if (savedTheme) {
+      setTheme(savedTheme);
+      document.documentElement.dataset.theme = savedTheme;
+    } else {
+      setTheme('dark');
+      document.documentElement.dataset.theme = 'dark';
     }
   }, []);
 
-  useEffect(() => {
-    if (isDark) {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
-    }
-  }, [isDark]);
+  const toggleTheme = () => {
+    const newTheme = theme === 'dark' ? 'light' : 'dark';
+    setTheme(newTheme);
+    document.documentElement.dataset.theme = newTheme;
+    localStorage.setItem('theme', newTheme);
+  };
 
   const handleLocationSelect = (lat: number, lng: number) => {
     setCurrentLocation((prev) => ({ ...prev, lat, lng }));
@@ -223,6 +224,14 @@ export default function Home() {
 
   return (
     <main className="min-h-screen py-20 px-4 sm:px-6 max-w-6xl mx-auto">
+      <button
+        onClick={toggleTheme}
+        className="fixed top-4 right-4 z-50 w-10 h-10 rounded-full glass border border-white/10 flex items-center justify-center hover:border-primary/50 transition-all"
+        aria-label="Toggle theme"
+      >
+        {theme === 'dark' ? '☀️' : '🌙'}
+      </button>
+
       {/* Header / Hero */}
       <header className="text-center mb-16 animate-fade-in">
         {/* Status pill */}
@@ -481,11 +490,11 @@ export default function Home() {
 
           {/* Theme Toggle */}
           <button
-            onClick={() => setIsDark(!isDark)}
+            onClick={toggleTheme}
             className="w-10 h-10 rounded-xl bg-white/5 hover:bg-black/5 dark:hover:bg-white/10 flex items-center justify-center transition-all active:scale-95"
-            title={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
+            title={theme === 'dark' ? "Switch to Light Mode" : "Switch to Dark Mode"}
           >
-            {isDark ? (
+            {theme === 'dark' ? (
               <svg className="w-5 h-5 text-yellow-500 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-11.314l.707.707m11.314 11.314l.707-.707M12 5a7 7 0 100 14 7 7 0 000-14z" />
               </svg>

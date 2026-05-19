@@ -3,65 +3,73 @@
 @tailwind utilities;
 
 :root {
-  /* --- LIGHT MODE (DEFAULT) --- */
-  --bg-deep: #f4f6f9; /* Rich light blue-grey */
-  --bg-surface: #ffffff;
-  --bg-card: rgba(15, 23, 42, 0.03);
-  
-  --primary: #3b82f6; /* Electric Blue */
-  --secondary: #8b5cf6; /* Vibrant Purple */
-  --accent: #10b981; /* Emerald Green */
-  --danger: #ef4444; /* Red */
-  
-  --text-primary: #0f172a; /* Slate 900 */
-  --text-secondary: #475569; /* Slate 600 */
-  --text-muted: #94a3b8; /* Slate 400 */
-  
-  --border-color: rgba(15, 23, 42, 0.08);
-  --border-glow: rgba(59, 130, 246, 0.25);
-  
-  /* Gradients */
-  --grad-hero: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
-  --grad-surface: radial-gradient(circle at top left, rgba(59, 130, 246, 0.06), transparent 40%),
-                  radial-gradient(circle at bottom right, rgba(139, 92, 246, 0.06), transparent 40%);
-  
-  /* Shadows & Glass */
-  --glass-bg: rgba(255, 255, 255, 0.7);
-  --glass-blur: blur(16px);
-  --shadow-lg: 0 10px 40px -10px rgba(15, 23, 42, 0.06);
-  
-  /* Typography */
-  --font-main: 'Outfit', 'Inter', system-ui, sans-serif;
-}
-
-:root.dark, .dark {
-  /* --- DARK MODE (OPTION) --- */
+  /* DARK MODE — DEFAULT */
   --bg-deep: #050505;
   --bg-surface: #121212;
   --bg-card: rgba(255, 255, 255, 0.03);
-  
+
   --primary: #3b82f6;
   --secondary: #8b5cf6;
   --accent: #10b981;
   --danger: #ef4444;
-  
+
   --text-primary: #ffffff;
   --text-secondary: #a1a1aa;
   --text-muted: #71717a;
-  
+
   --border-color: rgba(255, 255, 255, 0.1);
   --border-glow: rgba(59, 130, 246, 0.5);
-  
-  /* Gradients */
+
   --grad-hero: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
-  --grad-surface: radial-gradient(circle at top left, rgba(59, 130, 246, 0.15), transparent 40%),
-                  radial-gradient(circle at bottom right, rgba(139, 92, 246, 0.15), transparent 40%);
-  
-  /* Shadows & Glass */
+  --grad-surface: radial-gradient(circle at top left, 
+      rgba(59, 130, 246, 0.15), transparent 40%),
+      radial-gradient(circle at bottom right, 
+      rgba(139, 92, 246, 0.15), transparent 40%);
+
   --glass-bg: rgba(255, 255, 255, 0.05);
   --glass-blur: blur(12px);
   --shadow-lg: 0 10px 40px -10px rgba(0, 0, 0, 0.5);
+
+  --font-main: 'Outfit', 'Inter', system-ui, sans-serif;
 }
+
+[data-theme="light"] {
+  /* LIGHT MODE — OPTIONAL */
+  --bg-deep: #f4f6f9;
+  --bg-surface: #ffffff;
+  --bg-card: rgba(15, 23, 42, 0.03);
+
+  --primary: #2563eb;
+  --secondary: #7c3aed;
+  --accent: #059669;
+  --danger: #dc2626;
+
+  /* KEY FIX: light mode needs dark text tokens */
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+
+  --border-color: rgba(15, 23, 42, 0.08);
+  --border-glow: rgba(59, 130, 246, 0.25);
+
+  --grad-hero: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+  --grad-surface: radial-gradient(circle at top left, 
+      rgba(59, 130, 246, 0.06), transparent 40%),
+      radial-gradient(circle at bottom right, 
+      rgba(139, 92, 246, 0.06), transparent 40%);
+
+  --glass-bg: rgba(255, 255, 255, 0.75);
+  --glass-blur: blur(16px);
+  --shadow-lg: 0 10px 40px -10px rgba(15, 23, 42, 0.08);
+}
+
+/* Semantic Theme Utilities */
+.text-on-surface    { color: var(--text-primary); }
+.text-on-muted      { color: var(--text-secondary); }
+.text-on-faint      { color: var(--text-muted); }
+.bg-surface-card    { background: var(--glass-bg); }
+.border-surface     { border-color: var(--border-color); }
+
 
 * {
   box-sizing: border-box;

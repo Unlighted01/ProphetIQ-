@@ -29,7 +29,7 @@ const AIAdvisorPanel: React.FC<AIAdvisorProps> = ({ advice, isLoading, isError }
             <span className="text-danger font-bold text-lg">⚠️</span>
           </div>
           <div>
-            <h3 className="text-lg font-bold text-white leading-tight">AI Advisor</h3>
+            <h3 className="text-lg font-bold text-text-primary leading-tight">AI Advisor</h3>
             <p className="text-[10px] text-danger uppercase tracking-widest font-semibold mt-0.5">Temporarily Offline</p>
           </div>
         </div>
@@ -80,7 +80,7 @@ const AIAdvisorPanel: React.FC<AIAdvisorProps> = ({ advice, isLoading, isError }
             </svg>
           </div>
           <div>
-            <h3 className="text-lg font-bold text-white leading-tight">AI Advisor</h3>
+            <h3 className="text-lg font-bold text-text-primary leading-tight">AI Advisor</h3>
           </div>
         </div>
 
@@ -92,7 +92,7 @@ const AIAdvisorPanel: React.FC<AIAdvisorProps> = ({ advice, isLoading, isError }
 
       {/* Recommendation reason — prominent */}
       <div className="relative z-10 bg-white/5 rounded-xl p-4 border border-white/10 mb-5">
-        <p className="text-sm text-white leading-relaxed font-medium">{advice.recommendation_reason}</p>
+        <p className="text-sm text-text-primary leading-relaxed font-medium">{advice.recommendation_reason}</p>
       </div>
 
       <div className="space-y-4 relative z-10">

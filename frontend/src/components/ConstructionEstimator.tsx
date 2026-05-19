@@ -34,7 +34,7 @@ const ConstructionEstimator: React.FC<ConstructionEstimatorProps> = ({
   return (
     <div className="glass p-6 rounded-2xl border border-yellow-500/20 animate-fade-in">
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-lg font-bold text-white flex items-center gap-2">
+        <h3 className="text-lg font-bold text-text-primary flex items-center gap-2">
           <svg className="w-5 h-5 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
           </svg>
@@ -47,7 +47,7 @@ const ConstructionEstimator: React.FC<ConstructionEstimatorProps> = ({
 
       <div className="mb-6">
         <p className="text-xs text-text-muted mb-1 uppercase tracking-widest font-bold">Total Estimated Budget</p>
-        <p className="text-4xl font-black text-white tracking-tighter">
+        <p className="text-4xl font-black text-text-primary tracking-tighter">
           {formatCurrency(totalCost)}
         </p>
         <p className="text-[10px] text-text-muted mt-1 italic">
@@ -58,11 +58,11 @@ const ConstructionEstimator: React.FC<ConstructionEstimatorProps> = ({
       <div className="grid grid-cols-2 gap-4 mb-6">
         <div className="p-3 bg-white/5 rounded-xl border border-white/5">
           <p className="text-[10px] text-text-muted uppercase font-bold mb-1">Materials (60%)</p>
-          <p className="text-sm font-bold text-white">{formatCurrency(materials)}</p>
+          <p className="text-sm font-bold text-text-primary">{formatCurrency(materials)}</p>
         </div>
         <div className="p-3 bg-white/5 rounded-xl border border-white/5">
           <p className="text-[10px] text-text-muted uppercase font-bold mb-1">Labor (40%)</p>
-          <p className="text-sm font-bold text-white">{formatCurrency(labor)}</p>
+          <p className="text-sm font-bold text-text-primary">{formatCurrency(labor)}</p>
         </div>
       </div>
 

@@ -31,7 +31,7 @@ const ShapChart: React.FC<ShapChartProps> = ({ features }) => {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h3 className="text-xl font-bold text-white tracking-tight">
+          <h3 className="text-xl font-bold text-text-primary tracking-tight">
             Price <span className="text-gradient">Drivers</span>
           </h3>
           <p className="text-[10px] text-text-muted uppercase tracking-widest mt-1">

@@ -66,7 +66,7 @@ const RecommendedProperties: React.FC<RecommendedPropertiesProps> = ({
       {/* Section header */}
       <div className="flex items-center justify-between mb-5">
         <div>
-          <h2 className="text-xl font-bold text-white">Comparable Listings</h2>
+          <h2 className="text-xl font-bold text-text-primary">Comparable Listings</h2>
           <p className="text-xs text-text-muted mt-0.5">Similar properties in {city} near your estimated price</p>
         </div>
         <span className="text-[10px] uppercase tracking-widest font-bold text-text-muted border border-white/10 px-2 py-1 rounded-full">
@@ -105,7 +105,7 @@ const RecommendedProperties: React.FC<RecommendedPropertiesProps> = ({
 
             {/* Details */}
             <div className="p-4">
-              <h3 className="font-semibold text-white text-sm leading-tight mb-3 line-clamp-2">
+              <h3 className="font-semibold text-text-primary text-sm leading-tight mb-3 line-clamp-2">
                 {comp.title}
               </h3>
 
