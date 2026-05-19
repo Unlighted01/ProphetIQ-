@@ -93,6 +93,8 @@ const PredictionForm: React.FC<PredictionFormProps> = ({ onSubmit, isLoading, ex
     'Land_area (sqm)': '',
     City: DEFAULT_CITY,
     IsCondo: 1,
+    Quality: 'Standard',
+    Usage: 'Residential',
     Latitude: CITY_COORDS[DEFAULT_CITY].lat,
     Longitude: CITY_COORDS[DEFAULT_CITY].lng
   });
@@ -199,7 +201,8 @@ const PredictionForm: React.FC<PredictionFormProps> = ({ onSubmit, isLoading, ex
               <label className="block text-sm text-text-secondary mb-1.5">Project Standard</label>
               <select
                 name="Quality"
-                defaultValue="Standard"
+                value={formData.Quality}
+                onChange={handleChange}
                 className="w-full bg-white/5 border border-white/10 rounded-lg p-3 focus:border-primary outline-none text-text-primary"
               >
                 <option value="Economy" className="bg-bg-surface text-text-primary">Economy (Basic Finishes)</option>
@@ -211,7 +214,8 @@ const PredictionForm: React.FC<PredictionFormProps> = ({ onSubmit, isLoading, ex
               <label className="block text-sm text-text-secondary mb-1.5">Usage Type</label>
               <select
                 name="Usage"
-                defaultValue="Residential"
+                value={formData.Usage}
+                onChange={handleChange}
                 className="w-full bg-white/5 border border-white/10 rounded-lg p-3 focus:border-primary outline-none text-text-primary"
               >
                 <option value="Residential" className="bg-bg-surface text-text-primary">Residential (Home)</option>

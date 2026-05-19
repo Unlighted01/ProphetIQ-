@@ -20,6 +20,73 @@ const MapView = dynamic(() => import('@/components/MapView'), {
   loading: () => <div className="h-[400px] w-full rounded-xl bg-white/5 animate-pulse mt-6 border border-white/10" />,
 });
 
+interface LoadingStepsProps {
+  step: 'idle' | 'predicting' | 'advising' | 'investing' | 'done';
+}
+
+const LoadingSteps: React.FC<LoadingStepsProps> = ({ step }) => {
+  if (step === 'idle' || step === 'done') return null;
+
+  return (
+    <div className="glass p-8 rounded-2xl border border-white/10 max-w-xl mx-auto shadow-[0_8px_32px_rgba(59,130,246,0.1)] space-y-6 animate-fade-in my-8">
+      <div className="flex items-center gap-3">
+        <div className="relative flex items-center justify-center">
+          <span className="absolute w-5 h-5 bg-primary/30 rounded-full animate-ping"></span>
+          <span className="relative w-3.5 h-3.5 bg-primary rounded-full"></span>
+        </div>
+        <h3 className="text-base font-bold text-white tracking-tight">Generating Site Intelligence Report...</h3>
+      </div>
+
+      <div className="space-y-4">
+        {/* Step 1: Price Prediction */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <span className="text-sm">
+              {step === 'predicting' ? '⏳' : '✅'}
+            </span>
+            <span className={`text-sm font-semibold ${step === 'predicting' ? 'text-white' : 'text-text-muted'}`}>
+              Running XGBoost Pricing Engine
+            </span>
+          </div>
+          {step === 'predicting' && (
+            <span className="text-xs text-primary font-bold animate-pulse">In Progress...</span>
+          )}
+        </div>
+
+        {/* Step 2: AI Site Suitability Assessment */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <span className="text-sm">
+              {step === 'predicting' ? '⚪' : step === 'advising' ? '⏳' : '✅'}
+            </span>
+            <span className={`text-sm font-semibold ${step === 'advising' ? 'text-white' : 'text-text-muted'}`}>
+              ProphetIQ AI Site Assessment
+            </span>
+          </div>
+          {step === 'advising' && (
+            <span className="text-xs text-primary font-bold animate-pulse">In Progress...</span>
+          )}
+        </div>
+
+        {/* Step 3: Investment Analytics */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <span className="text-sm">
+              {step === 'predicting' || step === 'advising' ? '⚪' : '⏳'}
+            </span>
+            <span className={`text-sm font-semibold ${step === 'investing' ? 'text-white' : 'text-text-muted'}`}>
+              Calculating Construction & Investment Metrics
+            </span>
+          </div>
+          {step === 'investing' && (
+            <span className="text-xs text-primary font-bold animate-pulse">In Progress...</span>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export default function Home() {
   const [prediction, setPrediction] = useState<any>(null);
   const [advisorData, setAdvisorData] = useState<any>(null);
@@ -36,6 +103,8 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [isAdvisorLoading, setIsAdvisorLoading] = useState(false);
   const [isInvestmentLoading, setIsInvestmentLoading] = useState(false);
+  const [advisorError, setAdvisorError] = useState(false);
+  const [loadingStep, setLoadingStep] = useState<'idle' | 'predicting' | 'advising' | 'investing' | 'done'>('idle');
   const [error, setError] = useState<string | null>(null);
   const [serverStatus, setServerStatus] = useState<'online' | 'offline' | 'checking'>('checking');
 
@@ -86,6 +155,8 @@ export default function Home() {
     setInvestmentData(null);
     setLastFeatures(features);
     setError(null);
+    setAdvisorError(false);
+    setLoadingStep('predicting');
 
     const toastId = toast.loading('Analyzing property...', {
       description: 'Running XGBoost prediction model',
@@ -111,28 +182,39 @@ export default function Home() {
         document.getElementById('results-section')?.scrollIntoView({ behavior: 'smooth' });
       }, 200);
 
-      // Fetch Investment + AI Advice in parallel (non-blocking)
-      setIsInvestmentLoading(true);
+      // Fetch AI Advice (Step 2)
+      setLoadingStep('advising');
       setIsAdvisorLoading(true);
+      try {
+        const advice = await getAIAdvice(finalFeatures, result);
+        setAdvisorData(advice);
+      } catch (err) {
+        console.error('Advisor failed:', err);
+        setAdvisorError(true);
+        toast.warning('AI Advisor unavailable', {
+          description: 'The ProphetIQ AI analysis could not be completed.',
+        });
+      } finally {
+        setIsAdvisorLoading(false);
+      }
 
-      Promise.allSettled([
-        getInvestmentMetrics(result.predicted_price_php)
-          .then((data) => setInvestmentData(data))
-          .finally(() => setIsInvestmentLoading(false)),
+      // Fetch Investment Metrics (Step 3)
+      setLoadingStep('investing');
+      setIsInvestmentLoading(true);
+      try {
+        const metrics = await getInvestmentMetrics(result.predicted_price_php);
+        setInvestmentData(metrics);
+      } catch (err) {
+        console.error('Investment metrics failed:', err);
+      } finally {
+        setIsInvestmentLoading(false);
+      }
 
-        getAIAdvice(finalFeatures, result)
-          .then((advice) => setAdvisorData(advice))
-          .catch((err) => {
-            console.error('Advisor failed:', err);
-            toast.warning('AI Advisor unavailable', {
-              description: 'The Gemini analysis could not be completed.',
-            });
-          })
-          .finally(() => setIsAdvisorLoading(false)),
-      ]);
+      setLoadingStep('done');
     } catch (err: any) {
       const msg = err.message || 'An unexpected error occurred';
       setError(msg);
+      setLoadingStep('idle');
       toast.error('Prediction failed', { id: toastId, description: msg });
     } finally {
       setIsLoading(false);
@@ -187,7 +269,7 @@ export default function Home() {
             { value: '44', label: 'Municipalities' },
             { value: '±8%', label: 'Avg. Accuracy' },
             { value: 'XGBoost', label: 'ML Engine' },
-            { value: 'Gemini AI', label: 'Site Advisor' },
+            { value: 'ProphetIQ AI', label: 'Site Advisor' },
           ].map((stat) => (
             <div
               key={stat.label}
@@ -240,6 +322,9 @@ export default function Home() {
           </div>
         </div>
       </div>
+
+      {/* Loading Steps Component */}
+      <LoadingSteps step={loadingStep} />
 
       {/* Results / Intelligence Report Section */}
       <div id="results-section" className="space-y-12">
@@ -301,7 +386,7 @@ export default function Home() {
               {/* Right Column: AI & Investment Intelligence */}
               <div className="space-y-8">
                 <div id="ai-assessment" className="scroll-mt-24">
-                  <AIAdvisorPanel advice={advisorData} isLoading={isAdvisorLoading} />
+                  <AIAdvisorPanel advice={advisorData} isLoading={isAdvisorLoading} isError={advisorError} />
                 </div>
                 <MaterialCanvassing />
                 <div id="investment" className="scroll-mt-24">

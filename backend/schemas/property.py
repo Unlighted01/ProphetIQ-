@@ -54,14 +54,12 @@ class AdvisorRequest(BaseModel):
 
 class AdvisorResponse(BaseModel):
     """Structured JSON response from the AI Advisor."""
+    summary: str
     why_this_price: str
     red_flags: list[str]
     investment_take: str
     recommendation: str
     recommendation_reason: str
-
-    # summary is optional — Gemini doesn't always return it
-    summary: Optional[str] = None
 
 
 class InvestmentRequest(BaseModel):

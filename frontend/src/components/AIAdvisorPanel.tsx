@@ -10,6 +10,7 @@ interface AIAdvisorProps {
     recommendation_reason: string;
   } | null;
   isLoading: boolean;
+  isError?: boolean;
 }
 
 const RECOMMENDATION_STYLES: Record<string, { badge: string; glow: string; icon: string; label: string }> = {
@@ -18,7 +19,27 @@ const RECOMMENDATION_STYLES: Record<string, { badge: string; glow: string; icon:
   AVOID: { badge: 'bg-danger/20 text-danger border-danger/50',    glow: 'shadow-[0_0_20px_rgba(239,68,68,0.25)]',   icon: '✕', label: 'AVOID' },
 };
 
-const AIAdvisorPanel: React.FC<AIAdvisorProps> = ({ advice, isLoading }) => {
+const AIAdvisorPanel: React.FC<AIAdvisorProps> = ({ advice, isLoading, isError }) => {
+  if (isError) {
+    return (
+      <div className="glass p-8 rounded-2xl border border-danger/20 bg-danger/5 shadow-[0_8px_32px_rgba(239,68,68,0.1)] relative overflow-hidden animate-fade-in">
+        <div className="absolute -top-20 -right-20 w-48 h-48 bg-danger/10 rounded-full blur-[60px] pointer-events-none" />
+        <div className="relative z-10 flex items-center gap-3 mb-4">
+          <div className="w-9 h-9 rounded-xl bg-danger/10 border border-danger/25 flex items-center justify-center flex-shrink-0">
+            <span className="text-danger font-bold text-lg">⚠️</span>
+          </div>
+          <div>
+            <h3 className="text-lg font-bold text-white leading-tight">AI Advisor</h3>
+            <p className="text-[10px] text-danger uppercase tracking-widest font-semibold mt-0.5">Temporarily Offline</p>
+          </div>
+        </div>
+        <p className="text-sm text-text-secondary leading-relaxed relative z-10">
+          AI analysis temporarily unavailable. The price prediction and investment metrics above are still accurate.
+        </p>
+      </div>
+    );
+  }
+
   if (isLoading) {
     return (
       <div className="glass p-8 rounded-2xl border border-white/5 relative overflow-hidden">
@@ -35,7 +56,7 @@ const AIAdvisorPanel: React.FC<AIAdvisorProps> = ({ advice, isLoading }) => {
           <div className="h-3 bg-white/10 rounded w-5/6 animate-pulse" />
           <div className="h-3 bg-white/10 rounded w-4/6 animate-pulse" />
         </div>
-        <p className="mt-6 text-xs text-text-muted animate-pulse">Gemini AI is analyzing your property...</p>
+        <p className="mt-6 text-xs text-text-muted animate-pulse">ProphetIQ AI is analyzing your property...</p>
       </div>
     );
   }
@@ -60,7 +81,6 @@ const AIAdvisorPanel: React.FC<AIAdvisorProps> = ({ advice, isLoading }) => {
           </div>
           <div>
             <h3 className="text-lg font-bold text-white leading-tight">AI Advisor</h3>
-            <p className="text-[10px] text-text-muted uppercase tracking-widest">Powered by Gemini</p>
           </div>
         </div>
 

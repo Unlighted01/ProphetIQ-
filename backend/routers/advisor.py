@@ -44,6 +44,7 @@ Assume the currency is Philippine Peso (PHP or ₱) and area is in square meters
 
 Always return your response as a valid JSON object matching this exact schema:
 {
+  "summary": "2-3 sentence plain-English overview of this property and site in Pangasinan",
   "why_this_price": "explanation of the top 3 price drivers from SHAP data",
   "red_flags": ["specific concern 1", "specific concern 2"],
   "investment_take": "2-3 sentences on investment potential in this specific Philippine city",
@@ -129,8 +130,11 @@ Provide your engineering and site feasibility analysis as the requested JSON str
 
 
 @router.get("/diagnose")
-async def diagnose_gemini():
+async def diagnose_gemini(request: Request):
     """Diagnose the Gemini API setup and connection on the backend."""
+    secret = request.headers.get("X-Admin-Key")
+    if secret != os.getenv("ADMIN_SECRET", ""):
+        raise HTTPException(status_code=403, detail="Forbidden")
     key = os.getenv("GEMINI_API_KEY")
     if not key:
         return {
