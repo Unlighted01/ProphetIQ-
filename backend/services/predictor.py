@@ -25,12 +25,32 @@ def is_model_loaded() -> bool:
 def predict_price(features: dict) -> Tuple[float, list]:
     load_artifacts()
     
+    # Calculate interaction terms
+    floor_area = float(features.get('Floor_area (sqm)', 50.0))
+    land_area = float(features.get('Land_area (sqm)', 0.0))
+    is_condo = int(features.get('IsCondo', 1))
+    bedrooms = float(features.get('Bedrooms', 2))
+    bath = float(features.get('Bath', 1))
+    
+    price_per_sqm_proxy = floor_area * is_condo
+    total_rooms = bedrooms + bath
+    area_ratio = floor_area / (land_area if land_area != 0 else 1)
+    
     # Create DataFrame with exact column names expected by the model
-    # Note: 'Floor_area (sqm)' and 'Land_area (sqm)' are the keys
-    df = pd.DataFrame([features])
+    input_df = pd.DataFrame([{
+        'Bedrooms': bedrooms,
+        'Bath': bath,
+        'Floor_area (sqm)': floor_area,
+        'Land_area (sqm)': land_area,
+        'IsCondo': is_condo,
+        'City': str(features.get('City', 'Lingayen')),
+        'price_per_sqm_proxy': price_per_sqm_proxy,
+        'total_rooms': total_rooms,
+        'area_ratio': area_ratio
+    }])
     
     # Get prediction
-    raw_price = float(_model.predict(df)[0])
+    raw_price = float(_model.predict(input_df)[0])
     
     PANGASINAN_CITIES = [
         "Alaminos", "Dagupan", "San Carlos", "Urdaneta", "Agno", "Aguilar",
@@ -53,7 +73,7 @@ def predict_price(features: dict) -> Tuple[float, list]:
     preprocessor = _model.named_steps['preprocessor']
     regressor = _model.named_steps['regressor']
     
-    X_transformed = preprocessor.transform(df)
+    X_transformed = preprocessor.transform(input_df)
     shap_values = _explainer.shap_values(X_transformed)
     
     # Feature names

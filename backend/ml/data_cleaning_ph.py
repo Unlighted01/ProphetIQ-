@@ -31,7 +31,7 @@ def clean_ph_data(input_path, output_path):
     df = df[df['Floor_area (sqm)'] > 5]  # Minimal reasonable area
 
     # 6. Final selection
-    features = ['Price (PHP)', 'Bedrooms', 'Bath', 'Floor_area (sqm)', 'Land_area (sqm)', 'City', 'IsCondo', 'Latitude', 'Longitude']
+    features = ['Price (PHP)', 'Bedrooms', 'Bath', 'Floor_area (sqm)', 'Land_area (sqm)', 'City', 'IsCondo']
     df_clean = df[features]
 
     print(f"Cleaned data has {len(df_clean)} rows.")

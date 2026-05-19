@@ -1,14 +1,14 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
+import { toast } from 'sonner';
 
-// Fix for default marker icons in Leaflet with Webpack/Next
-const DefaultIcon = L.icon({
-  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-  iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+// Define custom icons for different validation states
+const ValidIcon = L.icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-yellow.png',
   shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
   iconSize: [25, 41],
   iconAnchor: [12, 41],
@@ -16,7 +16,23 @@ const DefaultIcon = L.icon({
   shadowSize: [41, 41]
 });
 
-L.Marker.prototype.options.icon = DefaultIcon;
+const InvalidIcon = L.icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+});
+
+const LoadingIcon = L.icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+});
 
 interface MapViewProps {
   latitude: number;
@@ -66,6 +82,71 @@ const LocationPicker: React.FC<{ onSelect: (lat: number, lng: number) => void }>
 };
 
 const MapView: React.FC<MapViewProps> = ({ latitude, longitude, city, price, onLocationSelect, isInteractive = true }) => {
+  const [pinnedCoords, setPinnedCoords] = useState({ lat: latitude, lng: longitude });
+  const [isValidating, setIsValidating] = useState(false);
+  const [validationStatus, setValidationStatus] = useState<'valid' | 'invalid'>('valid');
+
+  useEffect(() => {
+    setPinnedCoords({ lat: latitude, lng: longitude });
+    setValidationStatus('valid');
+  }, [latitude, longitude]);
+
+  const handleLocationPin = async (lat: number, lng: number) => {
+    if (isValidating) return;
+
+    setPinnedCoords({ lat, lng });
+    setIsValidating(true);
+
+    try {
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lng=${lng}&format=json`,
+        { headers: { 'Accept-Language': 'en', 'User-Agent': 'ProphetIQ-Land-Validation-Agent' } }
+      );
+      const data = await res.json();
+
+      if (data.error) {
+        setValidationStatus('invalid');
+        toast.error("Invalid location — please pin on land within Pangasinan");
+        return;
+      }
+
+      // 1. Must be in the Philippines
+      if (data.address?.country_code !== 'ph') {
+        setValidationStatus('invalid');
+        toast.error("ProphetIQ covers Philippine properties only");
+        return;
+      }
+
+      // 2. Must have some land address (not open water)
+      const hasLand = data.address?.road || 
+                      data.address?.suburb || 
+                      data.address?.village || 
+                      data.address?.municipality ||
+                      data.address?.city ||
+                      data.address?.county ||
+                      data.address?.neighbourhood ||
+                      data.address?.hamlet;
+
+      if (!hasLand) {
+        setValidationStatus('invalid');
+        toast.error("Invalid location — please pin on land within Pangasinan");
+        return;
+      }
+
+      // Validation passed
+      setValidationStatus('valid');
+      if (onLocationSelect) {
+        onLocationSelect(lat, lng);
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Geocoding failed — please try again");
+      setValidationStatus('invalid');
+    } finally {
+      setIsValidating(false);
+    }
+  };
+
   return (
     <div className="glass p-4 rounded-2xl mt-6 border border-white/10 overflow-hidden animate-fade-in relative z-0">
       <div className="flex items-center justify-between mb-4 px-4 pt-2">
@@ -80,14 +161,14 @@ const MapView: React.FC<MapViewProps> = ({ latitude, longitude, city, price, onL
         </div>
         {isInteractive && (
           <span className="text-[9px] font-bold text-yellow-500 bg-yellow-500/10 border border-yellow-500/30 px-2 py-1 rounded-full uppercase tracking-widest animate-pulse">
-            Right-Click to Pin
+            {isValidating ? "Validating..." : "Right-Click to Pin"}
           </span>
         )}
       </div>
       
       <div className="h-[400px] w-full rounded-xl overflow-hidden relative border border-white/10">
         <MapContainer 
-          center={[latitude, longitude]} 
+          center={[pinnedCoords.lat, pinnedCoords.lng]} 
           zoom={14} 
           scrollWheelZoom={false}
           style={{ height: '100%', width: '100%', zIndex: 10 }}
@@ -96,22 +177,33 @@ const MapView: React.FC<MapViewProps> = ({ latitude, longitude, city, price, onL
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
-          <MapUpdater lat={latitude} lng={longitude} />
+          <MapUpdater lat={pinnedCoords.lat} lng={pinnedCoords.lng} />
           <MapInteractionController />
-          {isInteractive && onLocationSelect && (
-            <LocationPicker onSelect={onLocationSelect} />
+          {isInteractive && (
+            <LocationPicker onSelect={handleLocationPin} />
           )}
           
-          <Marker position={[latitude, longitude]}>
+          <Marker 
+            position={[pinnedCoords.lat, pinnedCoords.lng]}
+            icon={isValidating ? LoadingIcon : validationStatus === 'valid' ? ValidIcon : InvalidIcon}
+          >
             <Popup>
               <div className="text-center font-sans min-w-[120px]">
-                <p className="font-bold text-sm m-0 text-slate-800">{city} Project Site</p>
-                {price && (
-                  <p className="text-xs text-blue-600 font-bold m-0 mt-1 italic">Est. ₱{price.toLocaleString()}</p>
+                {isValidating ? (
+                  <p className="font-bold text-sm m-0 text-slate-800 animate-pulse">Checking location...</p>
+                ) : (
+                  <>
+                    <p className="font-bold text-sm m-0 text-slate-800">
+                      {validationStatus === 'valid' ? `${city} Project Site` : 'Invalid Location'}
+                    </p>
+                    {price && validationStatus === 'valid' && (
+                      <p className="text-xs text-blue-600 font-bold m-0 mt-1 italic">Est. ₱{price.toLocaleString()}</p>
+                    )}
+                    <p className="text-[10px] text-slate-500 mt-1">
+                      {pinnedCoords.lat.toFixed(5)}, {pinnedCoords.lng.toFixed(5)}
+                    </p>
+                  </>
                 )}
-                <p className="text-[10px] text-slate-500 mt-1">
-                  {latitude.toFixed(5)}, {longitude.toFixed(5)}
-                </p>
               </div>
             </Popup>
           </Marker>
@@ -119,7 +211,7 @@ const MapView: React.FC<MapViewProps> = ({ latitude, longitude, city, price, onL
       </div>
       <div className="mt-3 px-4 flex justify-between items-center text-[10px] text-text-muted">
         <p className="flex items-center gap-1">
-          <span className="w-2 h-2 rounded-full bg-yellow-500"></span>
+          <span className={`w-2 h-2 rounded-full ${isValidating ? 'bg-blue-500 animate-ping' : validationStatus === 'valid' ? 'bg-yellow-500' : 'bg-red-500'}`}></span>
           Click the map once to scroll-zoom. Right-Click anywhere to pin the exact site location.
         </p>
       </div>
@@ -128,3 +220,4 @@ const MapView: React.FC<MapViewProps> = ({ latitude, longitude, city, price, onL
 };
 
 export default MapView;
+

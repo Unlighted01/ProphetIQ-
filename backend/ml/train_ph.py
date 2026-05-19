@@ -13,13 +13,17 @@ import shap
 def train_ph_model(data_path, model_path, explainer_path):
     print(f"Loading data from {data_path}...")
     df = pd.read_csv(data_path)
+    # 1. Feature Engineering (Interaction Terms)
+    df['price_per_sqm_proxy'] = df['Floor_area (sqm)'] * df['IsCondo']
+    df['total_rooms'] = df['Bedrooms'] + df['Bath']
+    df['area_ratio'] = df['Floor_area (sqm)'] / (df['Land_area (sqm)'].replace(0, 1))
 
     # Features and Target
     X = df.drop(columns=['Price (PHP)'])
     y = df['Price (PHP)']
 
-    # Identify columns
-    num_cols = ['Bedrooms', 'Bath', 'Floor_area (sqm)', 'Land_area (sqm)', 'IsCondo', 'Latitude', 'Longitude']
+    # Identify columns (Coordinates removed)
+    num_cols = ['Bedrooms', 'Bath', 'Floor_area (sqm)', 'Land_area (sqm)', 'IsCondo', 'price_per_sqm_proxy', 'total_rooms', 'area_ratio']
     cat_cols = ['City']
 
     # Preprocessing
@@ -69,7 +73,23 @@ def train_ph_model(data_path, model_path, explainer_path):
 
     # Final split for hold-out evaluation
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.15, random_state=42)
-    final_model.fit(X_train, y_train)
+    
+    pangasinan_cities = [
+        "Alaminos", "Dagupan", "San Carlos", "Urdaneta", "Agno", "Aguilar",
+        "Alcala", "Anda", "Asingan", "Balungao", "Bani", "Basista", "Bautista",
+        "Bayambang", "Binalonan", "Binmaley", "Bolinao", "Bugallon", "Burgos",
+        "Calasiao", "Dasol", "Infanta", "Labrador", "Laoac", "Lingayen",
+        "Mabini", "Malasiqui", "Manaoag", "Mangaldan", "Mangatarem", "Mapandan",
+        "Natividad", "Pozorrubio", "Rosales", "San Fabian", "San Jacinto",
+        "San Manuel", "San Nicolas", "San Quintin", "Santa Barbara", "Santa Maria",
+        "Santo Tomas", "Sison", "Sual", "Tayug", "Umingan", "Urbiztondo", "Villasis"
+    ]
+    
+    sample_weights = X_train['City'].apply(
+        lambda c: 3.0 if c in pangasinan_cities else 1.0
+    )
+    
+    final_model.fit(X_train, y_train, regressor__sample_weight=sample_weights)
 
     # Evaluate
     y_pred = final_model.predict(X_test)
@@ -89,6 +109,29 @@ def train_ph_model(data_path, model_path, explainer_path):
     explainer = shap.TreeExplainer(final_model.named_steps['regressor'])
     joblib.dump(explainer, explainer_path)
     print("All artifacts saved.")
+
+    # Sensitivity Test
+    print("\nRunning post-training sensitivity test...")
+    test_cases = [
+        {"City": "Lingayen", "Bedrooms": 1, "Bath": 1, "Floor_area (sqm)": 30, "Land_area (sqm)": 0, "IsCondo": 1, "Label": "Test A (Lingayen, 1 bed, 1 bath, 30 sqm condo)"},
+        {"City": "Lingayen", "Bedrooms": 3, "Bath": 2, "Floor_area (sqm)": 80, "Land_area (sqm)": 0, "IsCondo": 1, "Label": "Test B (Lingayen, 3 bed, 2 bath, 80 sqm condo)"},
+        {"City": "Lingayen", "Bedrooms": 5, "Bath": 4, "Floor_area (sqm)": 200, "Land_area (sqm)": 250, "IsCondo": 0, "Label": "Test C (Lingayen, 5 bed, 4 bath, 200 sqm house)"},
+        {"City": "Dagupan", "Bedrooms": 3, "Bath": 2, "Floor_area (sqm)": 80, "Land_area (sqm)": 0, "IsCondo": 1, "Label": "Test D (Dagupan, 3 bed, 2 bath, 80 sqm condo)"},
+        {"City": "Pasig", "Bedrooms": 3, "Bath": 2, "Floor_area (sqm)": 80, "Land_area (sqm)": 0, "IsCondo": 1, "Label": "Test E (Pasig, 3 bed, 2 bath, 80 sqm condo)"},
+    ]
+    
+    test_df = pd.DataFrame(test_cases)
+    test_df['price_per_sqm_proxy'] = test_df['Floor_area (sqm)'] * test_df['IsCondo']
+    test_df['total_rooms'] = test_df['Bedrooms'] + test_df['Bath']
+    test_df['area_ratio'] = test_df['Floor_area (sqm)'] / (test_df['Land_area (sqm)'].replace(0, 1))
+    
+    preds = final_model.predict(test_df)
+    
+    for i, row in test_df.iterrows():
+        p = float(preds[i])
+        if row['City'] in pangasinan_cities:
+            p = p * 0.18
+        print(f" -> {row['Label']}: Raw Pred = PHP {float(preds[i]):,.2f} | Final Pred = PHP {p:,.2f}")
 
 if __name__ == "__main__":
     data_path = "backend/data/processed/ph_houses_clean.csv"
