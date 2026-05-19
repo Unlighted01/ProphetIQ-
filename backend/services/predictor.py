@@ -32,6 +32,23 @@ def predict_price(features: dict) -> Tuple[float, list]:
     # Get prediction
     raw_price = float(_model.predict(df)[0])
     
+    PANGASINAN_CITIES = [
+        "Alaminos", "Dagupan", "San Carlos", "Urdaneta", "Agno", "Aguilar",
+        "Alcala", "Anda", "Asingan", "Balungao", "Bani", "Basista", "Bautista",
+        "Bayambang", "Binalonan", "Binmaley", "Bolinao", "Bugallon", "Burgos",
+        "Calasiao", "Dasol", "Infanta", "Labrador", "Laoac", "Lingayen",
+        "Mabini", "Malasiqui", "Manaoag", "Mangaldan", "Mangatarem", "Mapandan",
+        "Natividad", "Pozorrubio", "Rosales", "San Fabian", "San Jacinto",
+        "San Manuel", "San Nicolas", "San Quintin", "Santa Barbara", "Santa Maria",
+        "Santo Tomas", "Sison", "Sual", "Tayug", "Umingan", "Urbiztondo", "Villasis"
+    ]
+
+    PANGASINAN_MULTIPLIER = 0.18
+
+    city = features.get("City", "")
+    if city in PANGASINAN_CITIES:
+        raw_price = raw_price * PANGASINAN_MULTIPLIER
+    
     # SHAP
     preprocessor = _model.named_steps['preprocessor']
     regressor = _model.named_steps['regressor']
