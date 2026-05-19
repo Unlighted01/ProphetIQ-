@@ -99,6 +99,7 @@ export default function Home() {
     lng: 120.2315,
     city: 'Lingayen',
   });
+  const [isPinned, setIsPinned] = useState(false);
 
   const [isLoading, setIsLoading] = useState(false);
   const [isAdvisorLoading, setIsAdvisorLoading] = useState(false);
@@ -147,6 +148,7 @@ export default function Home() {
   };
 
   const handleLocationSelect = (lat: number, lng: number) => {
+    setIsPinned(true);
     setCurrentLocation((prev) => ({ ...prev, lat, lng }));
   };
 
@@ -300,7 +302,10 @@ export default function Home() {
             onSubmit={handlePredict}
             isLoading={isLoading}
             externalLocation={currentLocation}
-            onCityChange={(city, lat, lng) => setCurrentLocation({ city, lat, lng })}
+            onCityChange={(city, lat, lng) => {
+              setIsPinned(false);
+              setCurrentLocation({ city, lat, lng });
+            }}
           />
           {error && (
             <div className="p-4 bg-danger/10 border border-danger/20 rounded-xl text-danger text-sm font-medium flex items-start gap-3">
@@ -317,6 +322,7 @@ export default function Home() {
             city={currentLocation.city}
             price={prediction?.predicted_price}
             onLocationSelect={handleLocationSelect}
+            isPinned={isPinned}
           />
           <div className="mt-4 p-4 glass rounded-xl border border-yellow-500/20 bg-yellow-500/5">
             <h4 className="text-xs font-bold text-yellow-500 uppercase tracking-widest mb-2 flex items-center gap-2">

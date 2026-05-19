@@ -6,9 +6,10 @@ import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import { toast } from 'sonner';
 
-// Define custom icons for different validation states
-const ValidIcon = L.icon({
-  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-yellow.png',
+// Fix for default marker icons in Leaflet with Webpack/Next
+const DefaultIcon = L.icon({
+  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+  iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
   shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
   iconSize: [25, 41],
   iconAnchor: [12, 41],
@@ -16,23 +17,7 @@ const ValidIcon = L.icon({
   shadowSize: [41, 41]
 });
 
-const InvalidIcon = L.icon({
-  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
-  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41]
-});
-
-const LoadingIcon = L.icon({
-  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
-  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41]
-});
+L.Marker.prototype.options.icon = DefaultIcon;
 
 interface MapViewProps {
   latitude: number;
@@ -41,27 +26,35 @@ interface MapViewProps {
   price?: number;
   onLocationSelect?: (lat: number, lng: number) => void;
   isInteractive?: boolean;
+  isPinned?: boolean;    // ← add this
 }
 
 // Helper to center the map when coordinates change
-const MapUpdater: React.FC<{ lat: number; lng: number }> = ({ lat, lng }) => {
+const MapUpdater: React.FC<{ 
+  lat: number; 
+  lng: number; 
+  isPinned: boolean 
+}> = ({ lat, lng, isPinned }) => {
   const map = useMap();
   useEffect(() => {
-    map.setView([lat, lng], 14, { animate: true });
-  }, [lat, lng, map]);
+    if (isPinned) {
+      // User manually pinned — pan only, keep current zoom
+      map.panTo([lat, lng], { animate: true });
+    } else {
+      // City dropdown changed — full reset to zoom 14
+      map.setView([lat, lng], 14, { animate: true });
+    }
+  }, [lat, lng, map, isPinned]);
   return null;
 };
 
-// Component to handle map interaction (left-click to pin + activate scroll-zoom, deactivation on mouseout)
-const MapInteractionController: React.FC<{ onSelect?: (lat: number, lng: number) => void }> = ({ onSelect }) => {
+// Component to handle map interaction (scroll zoom activation on click, deactivation on mouseout)
+const MapInteractionController: React.FC = () => {
   const map = useMap();
 
   useMapEvents({
-    click(e) {
+    click() {
       map.scrollWheelZoom.enable();
-      if (onSelect) {
-        onSelect(e.latlng.lat, e.latlng.lng);
-      }
     },
     mouseout() {
       map.scrollWheelZoom.disable();
@@ -71,71 +64,101 @@ const MapInteractionController: React.FC<{ onSelect?: (lat: number, lng: number)
   return null;
 };
 
-const MapView: React.FC<MapViewProps> = ({ latitude, longitude, city, price, onLocationSelect, isInteractive = true }) => {
+// Location picker component with geocoding validation on right-click
+const LocationPicker: React.FC<{ 
+  onSelect: (lat: number, lng: number) => void 
+}> = ({ onSelect }) => {
+  const [markerState, setMarkerState] = useState<
+    'idle' | 'validating' | 'valid' | 'invalid'
+  >('idle');
+  const [pendingPos, setPendingPos] = useState<
+    [number, number] | null
+  >(null);
+
+  useMapEvents({
+    contextmenu: async (e) => {
+      if (e.originalEvent) e.originalEvent.preventDefault();
+      
+      const { lat, lng } = e.latlng;
+      setPendingPos([lat, lng]);
+      setMarkerState('validating');
+
+      try {
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lng=${lng}&format=json`,
+          { headers: { 'Accept-Language': 'en' } }
+        );
+        const data = await res.json();
+
+        const isInPH = data.address?.country_code === 'ph';
+        const isOnLand = !!(
+          data.address?.road ||
+          data.address?.suburb ||
+          data.address?.village ||
+          data.address?.municipality ||
+          data.address?.city ||
+          data.address?.town
+        );
+        const hasError = !!data.error;
+
+        if (hasError || !isInPH) {
+          setMarkerState('invalid');
+          toast.error(
+            !isInPH 
+              ? 'ProphetIQ covers Philippine properties only'
+              : 'Could not detect a valid location here'
+          );
+          return;
+        }
+
+        if (!isOnLand) {
+          setMarkerState('invalid');
+          toast.error(
+            'Invalid location — please pin on land within Pangasinan'
+          );
+          return;
+        }
+
+        setMarkerState('valid');
+        toast.success('Location pinned successfully');
+        onSelect(lat, lng);
+
+      } catch {
+        setMarkerState('invalid');
+        toast.error('Location validation failed — please try again');
+      }
+    },
+  });
+
+  // Render colored marker based on state
+  if (!pendingPos || markerState === 'idle') return null;
+
+  const markerColor = 
+    markerState === 'validating' ? '#3b82f6' :  // blue
+    markerState === 'valid'      ? '#eab308' :  // yellow  
+                                   '#ef4444';   // red
+
+  const icon = L.divIcon({
+    className: '',
+    html: `<div style="
+      width:14px;height:14px;
+      border-radius:50%;
+      background:${markerColor};
+      border:2px solid white;
+      box-shadow:0 0 8px ${markerColor};
+    "></div>`,
+    iconAnchor: [7, 7],
+  });
+
+  return <Marker position={pendingPos} icon={icon} />;
+};
+
+const MapView: React.FC<MapViewProps> = ({ latitude, longitude, city, price, onLocationSelect, isInteractive = true, isPinned = false }) => {
   const [pinnedCoords, setPinnedCoords] = useState({ lat: latitude, lng: longitude });
-  const [isValidating, setIsValidating] = useState(false);
-  const [validationStatus, setValidationStatus] = useState<'valid' | 'invalid'>('valid');
 
   useEffect(() => {
     setPinnedCoords({ lat: latitude, lng: longitude });
-    setValidationStatus('valid');
   }, [latitude, longitude]);
-
-  const handleLocationPin = async (lat: number, lng: number) => {
-    if (isValidating) return;
-
-    setPinnedCoords({ lat, lng });
-    setIsValidating(true);
-
-    try {
-      const res = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lng=${lng}&format=json`,
-        { headers: { 'Accept-Language': 'en', 'User-Agent': 'ProphetIQ-Land-Validation-Agent' } }
-      );
-      const data = await res.json();
-
-      if (data.error) {
-        setValidationStatus('invalid');
-        toast.error("Invalid location — please pin on land within Pangasinan");
-        return;
-      }
-
-      // 1. Must be in the Philippines
-      if (data.address?.country_code !== 'ph') {
-        setValidationStatus('invalid');
-        toast.error("ProphetIQ covers Philippine properties only");
-        return;
-      }
-
-      // 2. Must have some land address (not open water)
-      const hasLand = data.address?.road || 
-                      data.address?.suburb || 
-                      data.address?.village || 
-                      data.address?.municipality ||
-                      data.address?.city ||
-                      data.address?.county ||
-                      data.address?.neighbourhood ||
-                      data.address?.hamlet;
-
-      if (!hasLand) {
-        setValidationStatus('invalid');
-        toast.error("Invalid location — please pin on land within Pangasinan");
-        return;
-      }
-
-      // Validation passed
-      setValidationStatus('valid');
-      if (onLocationSelect) {
-        onLocationSelect(lat, lng);
-      }
-    } catch (err) {
-      console.error(err);
-      toast.error("Geocoding failed — please try again");
-      setValidationStatus('invalid');
-    } finally {
-      setIsValidating(false);
-    }
-  };
 
   return (
     <div className="glass p-4 rounded-2xl mt-6 border border-white/10 overflow-hidden animate-fade-in relative z-0">
@@ -151,7 +174,7 @@ const MapView: React.FC<MapViewProps> = ({ latitude, longitude, city, price, onL
         </div>
         {isInteractive && (
           <span className="text-[9px] font-bold text-yellow-500 bg-yellow-500/10 border border-yellow-500/30 px-2 py-1 rounded-full uppercase tracking-widest animate-pulse">
-            {isValidating ? "Validating..." : "Left-Click to Pin"}
+            Right-Click to Pin
           </span>
         )}
       </div>
@@ -167,32 +190,25 @@ const MapView: React.FC<MapViewProps> = ({ latitude, longitude, city, price, onL
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
-          <MapUpdater lat={pinnedCoords.lat} lng={pinnedCoords.lng} />
-          {isInteractive && (
-            <MapInteractionController onSelect={handleLocationPin} />
+          <MapUpdater lat={pinnedCoords.lat} lng={pinnedCoords.lng} isPinned={isPinned} />
+          <MapInteractionController />
+          {isInteractive && onLocationSelect && (
+            <LocationPicker 
+              key={`${latitude}-${longitude}`} 
+              onSelect={onLocationSelect} 
+            />
           )}
           
-          <Marker 
-            position={[pinnedCoords.lat, pinnedCoords.lng]}
-            icon={isValidating ? LoadingIcon : validationStatus === 'valid' ? ValidIcon : InvalidIcon}
-          >
+          <Marker position={[pinnedCoords.lat, pinnedCoords.lng]}>
             <Popup>
               <div className="text-center font-sans min-w-[120px]">
-                {isValidating ? (
-                  <p className="font-bold text-sm m-0 text-slate-800 animate-pulse">Checking location...</p>
-                ) : (
-                  <>
-                    <p className="font-bold text-sm m-0 text-slate-800">
-                      {validationStatus === 'valid' ? `${city} Project Site` : 'Invalid Location'}
-                    </p>
-                    {price && validationStatus === 'valid' && (
-                      <p className="text-xs text-blue-600 font-bold m-0 mt-1 italic">Est. ₱{price.toLocaleString()}</p>
-                    )}
-                    <p className="text-[10px] text-slate-500 mt-1">
-                      {pinnedCoords.lat.toFixed(5)}, {pinnedCoords.lng.toFixed(5)}
-                    </p>
-                  </>
+                <p className="font-bold text-sm m-0 text-slate-800">{city} Project Site</p>
+                {price && (
+                  <p className="text-xs text-blue-600 font-bold m-0 mt-1 italic">Est. ₱{price.toLocaleString()}</p>
                 )}
+                <p className="text-[10px] text-slate-500 mt-1">
+                  {pinnedCoords.lat.toFixed(5)}, {pinnedCoords.lng.toFixed(5)}
+                </p>
               </div>
             </Popup>
           </Marker>
@@ -200,8 +216,8 @@ const MapView: React.FC<MapViewProps> = ({ latitude, longitude, city, price, onL
       </div>
       <div className="mt-3 px-4 flex justify-between items-center text-[10px] text-text-muted">
         <p className="flex items-center gap-1">
-          <span className={`w-2 h-2 rounded-full ${isValidating ? 'bg-blue-500 animate-ping' : validationStatus === 'valid' ? 'bg-yellow-500' : 'bg-red-500'}`}></span>
-          Left-click anywhere on the map to pin the exact site location and activate scroll-zoom.
+          <span className="w-2 h-2 rounded-full bg-yellow-500"></span>
+          Click the map once to scroll-zoom. Right-Click anywhere to pin the exact site location.
         </p>
       </div>
     </div>
