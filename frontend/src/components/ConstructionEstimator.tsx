@@ -24,6 +24,10 @@ const ConstructionEstimator: React.FC<ConstructionEstimatorProps> = ({
     SandGravel: 950,    // per cu.m
     HollowBlocks: 14,   // per pc
     WireNails: 85,      // per kg
+    Finishing: 10000,   // per sqm (Tiles, Paint, Drywall, Ceilings)
+    MEP: 6000,          // per sqm (Electrical, Plumbing)
+    Roofing: 4500,      // per sqm (Structural framing, Sheets)
+    Openings: 4000,     // per sqm (Doors, Windows)
   });
 
   // Toggle checks for each material inclusion
@@ -33,13 +37,26 @@ const ConstructionEstimator: React.FC<ConstructionEstimatorProps> = ({
     SandGravel: true,
     HollowBlocks: true,
     WireNails: true,
+    Finishing: true,
+    MEP: true,
+    Roofing: true,
+    Openings: true,
   });
 
   // Architectural coefficients per sqm based on construction grade
   const COEFFICIENTS = {
-    Economy: { Cement: 0.75, Steel: 3.5, SandGravel: 0.12, HollowBlocks: 11.0, WireNails: 0.06 },
-    Standard: { Cement: 0.85, Steel: 4.5, SandGravel: 0.15, HollowBlocks: 12.5, WireNails: 0.08 },
-    Premium: { Cement: 1.05, Steel: 6.0, SandGravel: 0.18, HollowBlocks: 14.5, WireNails: 0.10 },
+    Economy: { 
+      Cement: 0.75, Steel: 3.5, SandGravel: 0.12, HollowBlocks: 11.0, WireNails: 0.06,
+      Finishing: 0.50, MEP: 0.58, Roofing: 0.55, Openings: 0.50
+    },
+    Standard: { 
+      Cement: 0.85, Steel: 4.5, SandGravel: 0.15, HollowBlocks: 12.5, WireNails: 0.08,
+      Finishing: 1.00, MEP: 1.00, Roofing: 1.00, Openings: 1.00
+    },
+    Premium: { 
+      Cement: 1.05, Steel: 6.0, SandGravel: 0.18, HollowBlocks: 14.5, WireNails: 0.10,
+      Finishing: 1.80, MEP: 1.66, Roofing: 1.55, Openings: 1.87
+    },
   };
 
   const activeCoeffs = COEFFICIENTS[activeGrade];
@@ -50,6 +67,10 @@ const ConstructionEstimator: React.FC<ConstructionEstimatorProps> = ({
   const sandQty = Math.max(1, Math.round(floorArea * activeCoeffs.SandGravel * 10) / 10);
   const chbQty = Math.max(1, Math.round(floorArea * activeCoeffs.HollowBlocks));
   const nailsQty = Math.max(1, Math.round(floorArea * activeCoeffs.WireNails * 10) / 10);
+  const finishingQty = Math.max(1, Math.round(floorArea * activeCoeffs.Finishing));
+  const mepQty = Math.max(1, Math.round(floorArea * activeCoeffs.MEP));
+  const roofingQty = Math.max(1, Math.round(floorArea * activeCoeffs.Roofing));
+  const openingsQty = Math.max(1, Math.round(floorArea * activeCoeffs.Openings));
 
   // Line item costs
   const cementCost = included.Cement ? cementQty * prices.Cement : 0;
@@ -57,9 +78,13 @@ const ConstructionEstimator: React.FC<ConstructionEstimatorProps> = ({
   const sandCost = included.SandGravel ? sandQty * prices.SandGravel : 0;
   const chbCost = included.HollowBlocks ? chbQty * prices.HollowBlocks : 0;
   const nailsCost = included.WireNails ? nailsQty * prices.WireNails : 0;
+  const finishingCost = included.Finishing ? finishingQty * prices.Finishing : 0;
+  const mepCost = included.MEP ? mepQty * prices.MEP : 0;
+  const roofingCost = included.Roofing ? roofingQty * prices.Roofing : 0;
+  const openingsCost = included.Openings ? openingsQty * prices.Openings : 0;
 
   // Aggregate math
-  const totalMaterials = cementCost + steelCost + sandCost + chbCost + nailsCost;
+  const totalMaterials = cementCost + steelCost + sandCost + chbCost + nailsCost + finishingCost + mepCost + roofingCost + openingsCost;
   const labor = totalMaterials * 0.667;
   const totalCost = totalMaterials + labor;
 
@@ -129,13 +154,13 @@ const ConstructionEstimator: React.FC<ConstructionEstimatorProps> = ({
       </div>
 
       {/* Interactive Bill of Materials Table */}
-      <div className="flex-grow relative z-10 overflow-x-auto scrollbar-thin max-h-[170px] border border-border-color rounded-xl bg-bg-deep/30 p-3 mb-4">
+      <div className="flex-grow relative z-10 overflow-x-auto scrollbar-thin max-h-[280px] border border-border-color rounded-xl bg-bg-deep/30 p-3 mb-4 font-mono">
         <table className="w-full text-left text-xs border-collapse">
           <thead>
             <tr className="border-b border-border-color text-[8px] text-on-faint uppercase tracking-widest font-headers">
               <th className="pb-2 font-extrabold">Active</th>
-              <th className="pb-2 font-extrabold">Material Item</th>
-              <th className="pb-2 font-extrabold text-center">BOM Count</th>
+              <th className="pb-2 font-extrabold">Material/Work Item</th>
+              <th className="pb-2 font-extrabold text-center">BOM Count / Area</th>
               <th className="pb-2 font-extrabold text-center">Unit Price (₱)</th>
               <th className="pb-2 font-extrabold text-right">Extended</th>
             </tr>
@@ -161,7 +186,7 @@ const ConstructionEstimator: React.FC<ConstructionEstimatorProps> = ({
                   type="number" 
                   value={prices.Cement} 
                   onChange={(e) => handlePriceChange('Cement', e.target.value)}
-                  className="w-14 text-center bg-bg-deep/50 border border-border-color rounded py-0.5 font-bold text-on-surface"
+                  className="w-16 text-center bg-bg-deep/50 border border-border-color rounded py-0.5 font-bold text-on-surface"
                 />
               </td>
               <td className="py-2.5 text-right font-extrabold text-on-surface tabular-nums">{formatCurrency(cementCost)}</td>
@@ -187,7 +212,7 @@ const ConstructionEstimator: React.FC<ConstructionEstimatorProps> = ({
                   type="number" 
                   value={prices.Steel} 
                   onChange={(e) => handlePriceChange('Steel', e.target.value)}
-                  className="w-14 text-center bg-bg-deep/50 border border-border-color rounded py-0.5 font-bold text-on-surface"
+                  className="w-16 text-center bg-bg-deep/50 border border-border-color rounded py-0.5 font-bold text-on-surface"
                 />
               </td>
               <td className="py-2.5 text-right font-extrabold text-on-surface tabular-nums">{formatCurrency(steelCost)}</td>
@@ -213,7 +238,7 @@ const ConstructionEstimator: React.FC<ConstructionEstimatorProps> = ({
                   type="number" 
                   value={prices.SandGravel} 
                   onChange={(e) => handlePriceChange('SandGravel', e.target.value)}
-                  className="w-14 text-center bg-bg-deep/50 border border-border-color rounded py-0.5 font-bold text-on-surface"
+                  className="w-16 text-center bg-bg-deep/50 border border-border-color rounded py-0.5 font-bold text-on-surface"
                 />
               </td>
               <td className="py-2.5 text-right font-extrabold text-on-surface tabular-nums">{formatCurrency(sandCost)}</td>
@@ -239,7 +264,7 @@ const ConstructionEstimator: React.FC<ConstructionEstimatorProps> = ({
                   type="number" 
                   value={prices.HollowBlocks} 
                   onChange={(e) => handlePriceChange('HollowBlocks', e.target.value)}
-                  className="w-14 text-center bg-bg-deep/50 border border-border-color rounded py-0.5 font-bold text-on-surface"
+                  className="w-16 text-center bg-bg-deep/50 border border-border-color rounded py-0.5 font-bold text-on-surface"
                 />
               </td>
               <td className="py-2.5 text-right font-extrabold text-on-surface tabular-nums">{formatCurrency(chbCost)}</td>
@@ -265,10 +290,114 @@ const ConstructionEstimator: React.FC<ConstructionEstimatorProps> = ({
                   type="number" 
                   value={prices.WireNails} 
                   onChange={(e) => handlePriceChange('WireNails', e.target.value)}
-                  className="w-14 text-center bg-bg-deep/50 border border-border-color rounded py-0.5 font-bold text-on-surface"
+                  className="w-16 text-center bg-bg-deep/50 border border-border-color rounded py-0.5 font-bold text-on-surface"
                 />
               </td>
               <td className="py-2.5 text-right font-extrabold text-on-surface tabular-nums">{formatCurrency(nailsCost)}</td>
+            </tr>
+
+            {/* Finishing Works */}
+            <tr className={`hover:bg-white/5 transition-colors ${!included.Finishing ? 'opacity-35' : ''}`}>
+              <td className="py-2.5">
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input 
+                    type="checkbox" 
+                    checked={included.Finishing} 
+                    onChange={() => toggleIncluded('Finishing')}
+                    className="sr-only peer"
+                  />
+                  <div className="w-7 h-4 bg-bg-deep border border-border-color peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-3 peer-checked:after:bg-white after:content-[''] after:absolute after:top-[3px] after:left-[3px] after:bg-text-muted after:rounded-full after:h-2.5 after:w-2.5 after:transition-all peer-checked:bg-yellow-500 transition-all"></div>
+                </label>
+              </td>
+              <td className="py-2.5 font-bold text-on-surface font-sans">Finishing (Paint, Tiles, Ceilings)</td>
+              <td className="py-2.5 text-center font-bold tabular-nums text-primary">{finishingQty} sqm</td>
+              <td className="py-2.5 text-center">
+                <input 
+                  type="number" 
+                  value={prices.Finishing} 
+                  onChange={(e) => handlePriceChange('Finishing', e.target.value)}
+                  className="w-16 text-center bg-bg-deep/50 border border-border-color rounded py-0.5 font-bold text-on-surface"
+                />
+              </td>
+              <td className="py-2.5 text-right font-extrabold text-on-surface tabular-nums">{formatCurrency(finishingCost)}</td>
+            </tr>
+
+            {/* MEP Works */}
+            <tr className={`hover:bg-white/5 transition-colors ${!included.MEP ? 'opacity-35' : ''}`}>
+              <td className="py-2.5">
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input 
+                    type="checkbox" 
+                    checked={included.MEP} 
+                    onChange={() => toggleIncluded('MEP')}
+                    className="sr-only peer"
+                  />
+                  <div className="w-7 h-4 bg-bg-deep border border-border-color peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-3 peer-checked:after:bg-white after:content-[''] after:absolute after:top-[3px] after:left-[3px] after:bg-text-muted after:rounded-full after:h-2.5 after:w-2.5 after:transition-all peer-checked:bg-yellow-500 transition-all"></div>
+                </label>
+              </td>
+              <td className="py-2.5 font-bold text-on-surface font-sans">MEP (Electrical &amp; Plumbing)</td>
+              <td className="py-2.5 text-center font-bold tabular-nums text-primary">{mepQty} sqm</td>
+              <td className="py-2.5 text-center">
+                <input 
+                  type="number" 
+                  value={prices.MEP} 
+                  onChange={(e) => handlePriceChange('MEP', e.target.value)}
+                  className="w-16 text-center bg-bg-deep/50 border border-border-color rounded py-0.5 font-bold text-on-surface"
+                />
+              </td>
+              <td className="py-2.5 text-right font-extrabold text-on-surface tabular-nums">{formatCurrency(mepCost)}</td>
+            </tr>
+
+            {/* Roofing Works */}
+            <tr className={`hover:bg-white/5 transition-colors ${!included.Roofing ? 'opacity-35' : ''}`}>
+              <td className="py-2.5">
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input 
+                    type="checkbox" 
+                    checked={included.Roofing} 
+                    onChange={() => toggleIncluded('Roofing')}
+                    className="sr-only peer"
+                  />
+                  <div className="w-7 h-4 bg-bg-deep border border-border-color peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-3 peer-checked:after:bg-white after:content-[''] after:absolute after:top-[3px] after:left-[3px] after:bg-text-muted after:rounded-full after:h-2.5 after:w-2.5 after:transition-all peer-checked:bg-yellow-500 transition-all"></div>
+                </label>
+              </td>
+              <td className="py-2.5 font-bold text-on-surface font-sans">Roofing (Frame &amp; Sheets)</td>
+              <td className="py-2.5 text-center font-bold tabular-nums text-primary">{roofingQty} sqm</td>
+              <td className="py-2.5 text-center">
+                <input 
+                  type="number" 
+                  value={prices.Roofing} 
+                  onChange={(e) => handlePriceChange('Roofing', e.target.value)}
+                  className="w-16 text-center bg-bg-deep/50 border border-border-color rounded py-0.5 font-bold text-on-surface"
+                />
+              </td>
+              <td className="py-2.5 text-right font-extrabold text-on-surface tabular-nums">{formatCurrency(roofingCost)}</td>
+            </tr>
+
+            {/* Doors & Windows */}
+            <tr className={`hover:bg-white/5 transition-colors ${!included.Openings ? 'opacity-35' : ''}`}>
+              <td className="py-2.5">
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input 
+                    type="checkbox" 
+                    checked={included.Openings} 
+                    onChange={() => toggleIncluded('Openings')}
+                    className="sr-only peer"
+                  />
+                  <div className="w-7 h-4 bg-bg-deep border border-border-color peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-3 peer-checked:after:bg-white after:content-[''] after:absolute after:top-[3px] after:left-[3px] after:bg-text-muted after:rounded-full after:h-2.5 after:w-2.5 after:transition-all peer-checked:bg-yellow-500 transition-all"></div>
+                </label>
+              </td>
+              <td className="py-2.5 font-bold text-on-surface font-sans">Doors &amp; Windows (Openings)</td>
+              <td className="py-2.5 text-center font-bold tabular-nums text-primary">{openingsQty} sqm</td>
+              <td className="py-2.5 text-center">
+                <input 
+                  type="number" 
+                  value={prices.Openings} 
+                  onChange={(e) => handlePriceChange('Openings', e.target.value)}
+                  className="w-16 text-center bg-bg-deep/50 border border-border-color rounded py-0.5 font-bold text-on-surface"
+                />
+              </td>
+              <td className="py-2.5 text-right font-extrabold text-on-surface tabular-nums">{formatCurrency(openingsCost)}</td>
             </tr>
           </tbody>
         </table>
