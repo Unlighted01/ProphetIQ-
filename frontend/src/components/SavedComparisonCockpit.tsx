@@ -89,7 +89,7 @@ const SavedComparisonCockpit: React.FC<SavedComparisonCockpitProps> = ({
         <div>
           <h3 className="text-lg font-bold text-on-surface mb-1 uppercase tracking-tight">Engineering Workspace Empty</h3>
           <p className="text-xs text-on-muted max-w-sm font-sans normal-case leading-relaxed">
-            Predict a property price above, then click "Save Site to Cockpit" to bookmark, cross-compare, and evaluate multiple projects side-by-side.
+            Predict a construction cost above, then click "Save Site to Cockpit" to bookmark, cross-compare, and evaluate multiple project blueprints side-by-side.
           </p>
         </div>
       </div>
@@ -233,11 +233,11 @@ const SavedComparisonCockpit: React.FC<SavedComparisonCockpitProps> = ({
                     <td key={p.id} className="py-3 text-center font-bold text-on-surface font-sans uppercase">{p.city}</td>
                   ))}
                 </tr>
-                {/* Property Type */}
+                {/* Structure Frame */}
                 <tr className="hover:bg-white/5 transition-colors">
-                  <td className="py-3 text-on-faint font-extrabold uppercase tracking-widest text-[9px] font-headers">Property Type</td>
+                  <td className="py-3 text-on-faint font-extrabold uppercase tracking-widest text-[9px] font-headers">Structure Frame</td>
                   {comparedProjects.map(p => (
-                    <td key={p.id} className="py-3 text-center font-semibold text-on-surface font-sans">{p.features.IsCondo === 1 ? 'Condo / Apartment' : 'House & Lot'}</td>
+                    <td key={p.id} className="py-3 text-center font-semibold text-on-surface font-sans">{p.features.IsCondo === 1 ? 'Condo / Multi-Level' : 'House / Single-Family'}</td>
                   ))}
                 </tr>
                 {/* Floor Area */}
@@ -265,16 +265,16 @@ const SavedComparisonCockpit: React.FC<SavedComparisonCockpitProps> = ({
                     </td>
                   ))}
                 </tr>
-                {/* Price Estimate */}
+                {/* Projected Build Cost */}
                 <tr className="hover:bg-white/5 transition-colors bg-bg-deep/50">
-                  <td className="py-3 text-on-faint font-extrabold uppercase tracking-widest text-[9px] font-headers">Predicted Price</td>
+                  <td className="py-3 text-on-faint font-extrabold uppercase tracking-widest text-[9px] font-headers">Projected Build Cost</td>
                   {comparedProjects.map(p => (
                     <td key={p.id} className="py-3 text-center font-extrabold text-on-surface text-base tabular-nums">{phpFmt(p.predictedPrice)}</td>
                   ))}
                 </tr>
-                {/* Est Monthly Rent */}
+                {/* Est. Completed Rent */}
                 <tr className="hover:bg-white/5 transition-colors">
-                  <td className="py-3 text-on-faint font-extrabold uppercase tracking-widest text-[9px] font-headers">Est. Monthly Rent</td>
+                  <td className="py-3 text-on-faint font-extrabold uppercase tracking-widest text-[9px] font-headers">Est. Completed Rent</td>
                   {comparedProjects.map(p => (
                     <td key={p.id} className="py-3 text-center font-bold text-accent tabular-nums">{phpFmt(p.rent)}</td>
                   ))}
@@ -300,9 +300,9 @@ const SavedComparisonCockpit: React.FC<SavedComparisonCockpitProps> = ({
           {/* High-Fidelity Comparison Charts (CSS Flex Bars) */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             
-            {/* Chart 1: Total Price Comparison */}
+            {/* Chart 1: Total Projected Build Cost Comparison */}
             <div className="bg-bg-deep/20 rounded-2xl p-5 border border-border-color">
-              <span className="block text-[9px] text-on-faint uppercase font-bold tracking-widest mb-4 font-headers">Total Acquisition Price</span>
+              <span className="block text-[9px] text-on-faint uppercase font-bold tracking-widest mb-4 font-headers">Total Projected Build Cost</span>
               <div className="space-y-4">
                 {comparedProjects.map((p, idx) => {
                   const percent = maxPrice > 0 ? (p.predictedPrice / maxPrice) * 100 : 0;
@@ -324,9 +324,9 @@ const SavedComparisonCockpit: React.FC<SavedComparisonCockpitProps> = ({
               </div>
             </div>
 
-            {/* Chart 2: Price per Floor Sqm Comparison */}
+            {/* Chart 2: Build Cost per Sqm Comparison */}
             <div className="bg-bg-deep/20 rounded-2xl p-5 border border-border-color">
-              <span className="block text-[9px] text-on-faint uppercase font-bold tracking-widest mb-4 font-headers">Price per Floor Sqm</span>
+              <span className="block text-[9px] text-on-faint uppercase font-bold tracking-widest mb-4 font-headers">Build Cost per Sqm</span>
               <div className="space-y-4">
                 {comparedProjects.map((p, idx) => {
                   const pricePerSqm = p.predictedPrice / (p.features['Floor_area (sqm)'] || 1);

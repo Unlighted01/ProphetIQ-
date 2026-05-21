@@ -18,9 +18,9 @@ const PROPERTY_IMAGES = [
 ];
 
 const PROPERTY_TEMPLATES = [
-  { title: "Premier {type} near {city} CBD", variance: -0.05 },
-  { title: "Modern {type} in {city}", variance: 0.08 },
-  { title: "Luxury {type} — {city} Prestige", variance: 0.13 },
+  { title: "Completed {type} - Modern {city} Villa", variance: -0.05 },
+  { title: "Completed {type} - Mid-Rise {city} Frame", variance: 0.08 },
+  { title: "Completed {type} - Premium {city} Commercial", variance: 0.13 },
 ];
 
 function formatPrice(n: number) {
@@ -35,7 +35,7 @@ const RecommendedProperties: React.FC<RecommendedPropertiesProps> = ({
   bedrooms,
   isCondo,
 }) => {
-  const typeName = isCondo === 1 ? 'Condo' : 'House';
+  const typeName = isCondo === 1 ? 'High-Rise' : 'Low-Rise';
 
   const comps = useMemo(() => {
     return PROPERTY_TEMPLATES.map((tmpl, i) => {
@@ -53,7 +53,7 @@ const RecommendedProperties: React.FC<RecommendedPropertiesProps> = ({
         baths,
         sqm,
         image: PROPERTY_IMAGES[i % PROPERTY_IMAGES.length],
-        tag: i === 0 ? '🔥 Hot Deal' : i === 2 ? '⭐ Premium' : '✅ Good Value',
+        tag: i === 0 ? '👷 Economy Grade' : i === 2 ? '💎 Premium Spec' : '🏗️ Standard Spec',
         tagColor: i === 0 ? 'text-orange-400 bg-orange-500/10 border-orange-500/20'
             : i === 2 ? 'text-yellow-400 bg-yellow-500/10 border-yellow-500/20'
             : 'text-accent bg-accent/10 border-accent/20',
@@ -67,14 +67,14 @@ const RecommendedProperties: React.FC<RecommendedPropertiesProps> = ({
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-3">
           <div className="border-l-2 border-primary pl-4">
             <h2 className="text-xl font-bold uppercase tracking-wider text-on-surface font-headers">
-              Comparable Listings
+              Completed Build Portfolio
             </h2>
             <p className="text-xs text-on-muted mt-0.5 font-medium">
-              Similar properties in {city} near your estimated price
+              Realized blueprints and actual construction budgets for similar projects in {city}
             </p>
           </div>
           <span className="text-[9px] uppercase tracking-widest font-mono font-bold text-on-faint border border-border-color bg-bg-surface/50 px-3 py-1.5 rounded-lg self-start sm:self-center">
-            AI Generated Model
+            Historical Records
           </span>
         </div>
 
@@ -127,15 +127,15 @@ const RecommendedProperties: React.FC<RecommendedPropertiesProps> = ({
                   {/* Dimension Matrices */}
                   <div className="grid grid-cols-3 gap-2 bg-bg-deep/35 border border-border-color p-2 rounded-xl text-center text-[10px] font-headers font-bold uppercase tracking-wider text-on-muted">
                     <div className="flex flex-col items-center py-1">
-                      <span className="text-[9px] text-on-faint mb-0.5">Beds</span>
+                      <span className="text-[8px] text-on-faint mb-0.5">Rooms</span>
                       <span className="text-primary text-xs font-mono">{comp.beds}</span>
                     </div>
                     <div className="flex flex-col items-center py-1 border-x border-border-color">
-                      <span className="text-[9px] text-on-faint mb-0.5">Baths</span>
+                      <span className="text-[8px] text-on-faint mb-0.5">Wet Zones</span>
                       <span className="text-accent text-xs font-mono">{comp.baths}</span>
                     </div>
                     <div className="flex flex-col items-center py-1">
-                      <span className="text-[9px] text-on-faint mb-0.5">Area</span>
+                      <span className="text-[8px] text-on-faint mb-0.5">Build Area</span>
                       <span className="text-secondary text-xs font-mono">{comp.sqm}㎡</span>
                     </div>
                   </div>
@@ -143,10 +143,10 @@ const RecommendedProperties: React.FC<RecommendedPropertiesProps> = ({
                   {/* CTA Footer */}
                   <div className="flex items-center justify-between pt-1 border-t border-border-color/30">
                     <span className="text-[9px] text-on-faint uppercase font-bold tracking-widest font-mono">
-                      REF // C-{i + 1}
+                      BLUEPRINT // B-{i + 1}
                     </span>
                     <button className="text-[10px] font-bold text-primary uppercase tracking-wider hover:text-on-surface transition-colors flex items-center gap-1 font-headers">
-                      Details
+                      View Blueprints
                       <span className="group-hover:translate-x-1 transition-transform">→</span>
                     </button>
                   </div>

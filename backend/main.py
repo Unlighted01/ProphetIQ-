@@ -41,8 +41,8 @@ async def lifespan(app: FastAPI):
 limiter = Limiter(key_func=get_remote_address, default_limits=["60/minute"])
 
 app = FastAPI(
-    title="ProphetIQ API",
-    description="Philippine Real Estate Price Prediction & Investment Intelligence",
+    title="ProphetIQ Construction Intelligence API",
+    description="Philippine Construction Costing & Geotechnical Site Intelligence",
     version="1.1.0",
     lifespan=lifespan,
     docs_url="/docs",

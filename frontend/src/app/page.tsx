@@ -47,7 +47,7 @@ const LoadingSteps: React.FC<LoadingStepsProps> = ({ step }) => {
               {step === 'predicting' ? '⏳' : '✅'}
             </span>
             <span className={`text-sm font-semibold ${step === 'predicting' ? 'text-on-surface' : 'text-on-muted'}`}>
-              Running XGBoost Pricing Engine
+              Running Civil Costing Engine
             </span>
           </div>
           {step === 'predicting' && (
@@ -77,7 +77,7 @@ const LoadingSteps: React.FC<LoadingStepsProps> = ({ step }) => {
               {step === 'predicting' || step === 'advising' ? '⚪' : '⏳'}
             </span>
             <span className={`text-sm font-semibold ${step === 'investing' ? 'text-on-surface' : 'text-on-muted'}`}>
-              Calculating Construction & Investment Metrics
+              Calculating Build Financing & ROI Metrics
             </span>
           </div>
           {step === 'investing' && (
@@ -246,8 +246,8 @@ export default function Home() {
     setAdvisorError(false);
     setLoadingStep('predicting');
 
-    const toastId = toast.loading('Analyzing property...', {
-      description: 'Running XGBoost prediction model',
+    const toastId = toast.loading('Analyzing site specs...', {
+      description: 'Running structural costing engine',
     });
 
     try {
@@ -262,7 +262,7 @@ export default function Home() {
 
       toast.success('Report generated!', {
         id: toastId,
-        description: `Predicted: ₱${result.predicted_price_php?.toLocaleString('en-PH', { maximumFractionDigits: 0 })}`,
+        description: `Projected: ₱${result.predicted_price_php?.toLocaleString('en-PH', { maximumFractionDigits: 0 })}`,
       });
 
       // Smooth scroll to results
@@ -280,7 +280,7 @@ export default function Home() {
         console.error('Advisor failed:', err);
         setAdvisorError(true);
         toast.warning('AI Advisor unavailable', {
-          description: 'The ProphetIQ AI analysis could not be completed.',
+          description: 'The ProphetIQ AI site engineering analysis could not be completed.',
         });
       } finally {
         setIsAdvisorLoading(false);
@@ -356,15 +356,15 @@ export default function Home() {
           <span className="text-on-surface font-bold underline decoration-primary decoration-2">
             Engineering &amp; Construction
           </span>{' '}
-          intelligence. Bridge the gap between property value and buildability in Pangasinan.
+          intelligence. Bridge the gap between structural budgeting and buildability in Pangasinan.
         </p>
 
         {/* Quick stats bar */}
         <div className="flex flex-wrap justify-center gap-4 mt-10 font-headers">
           {[
             { value: '44', label: 'Municipalities' },
-            { value: '±8%', label: 'Avg. Accuracy' },
-            { value: 'XGBoost', label: 'ML Engine' },
+            { value: 'Determin.', label: 'Cost Accuracy' },
+            { value: 'Analytical', label: 'Costing Engine' },
             { value: 'ProphetIQ AI', label: 'Site Advisor' },
           ].map((stat) => (
             <div
@@ -464,9 +464,9 @@ export default function Home() {
                 {[
                   { label: 'Overview', id: 'overview' },
                   { label: 'AI Advisor', id: 'ai-assessment' },
-                  { label: 'Price Drivers', id: 'shap-drivers' },
+                  { label: 'Cost Drivers', id: 'shap-drivers' },
                   { label: 'Investment', id: 'investment' },
-                  { label: 'Comparables', id: 'comparables' }
+                  { label: 'Completed Portfolio', id: 'comparables' }
                 ].map((item) => (
                   <button
                     key={item.id}

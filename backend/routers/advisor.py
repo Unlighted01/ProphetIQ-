@@ -167,23 +167,25 @@ async def get_property_advice(body: AdvisorRequest):
         shap_text = "(SHAP data unavailable)"
 
     user_prompt = f"""
-Analyze this property from a construction and engineering perspective for a potential project in {features.City}:
+Analyze this project site and construction specification from an engineering and site feasibility perspective for a potential project in {features.City}:
 
-PROPERTY DETAILS:
+PROJECT SITE & SPECS:
 - City/Region: {features.City}
-- Property Type: {"Condo / Apartment" if features.IsCondo == 1 else "House & Lot / Townhouse"}
+- Structure Profile: {"Multi-Level/Condominium Frame" if features.IsCondo == 1 else "Single-Family/Multi-Family Residential Frame"}
 - Floor Area: {features.Floor_area_sqm} sqm
 - Land Area: {features.Land_area_sqm} sqm
-- Bedrooms: {features.Bedrooms}
-- Bathrooms: {features.Bath}
+- Bedrooms / Rooms: {features.Bedrooms}
+- Bathrooms / Wet Zones: {features.Bath}
+- Quality Grade: {features.Quality}
+- Intended Usage: {features.Usage}
 - Coordinates: {features.Latitude}, {features.Longitude}
 
-ML PREDICTION RESULTS:
-- Predicted price: ₱{prediction.predicted_price_php:,.0f}
-- Low estimate: ₱{prediction.price_range_low:,.0f}
-- High estimate: ₱{prediction.price_range_high:,.0f}
+CIVIL ENGINEERING COST ESTIMATES:
+- Projected Construction Budget: ₱{prediction.predicted_price_php:,.0f}
+- Low-Bound Estimate: ₱{prediction.price_range_low:,.0f}
+- High-Bound Estimate: ₱{prediction.price_range_high:,.0f}
 
-TOP PRICE DRIVERS (SHAP analysis):
+BUDGET ALLOCATIONS (Cost Driver Decomposition):
 {shap_text}
 
 Provide your engineering and site feasibility analysis as the requested JSON structure.

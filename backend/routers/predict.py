@@ -12,11 +12,11 @@ router = APIRouter(prefix="/predict", tags=["Prediction"])
 CONFIDENCE_MARGIN = 0.10  # ±10% price range
 
 
-@router.post("/", response_model=PredictionResponse, summary="Predict House Price")
+@router.post("/", response_model=PredictionResponse, summary="Predict Construction Cost")
 async def predict(features: PropertyFeatures):
     """
-    Submit house features and receive an AI-predicted sale price
-    along with the top contributing SHAP factors.
+    Submit building and site parameters and receive an AI-predicted construction cost
+    along with the top contributing cost factors (material, geotech, logistics).
     """
     try:
         features_dict = features.model_dump(by_alias=True)

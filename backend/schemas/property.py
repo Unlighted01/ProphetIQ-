@@ -26,6 +26,8 @@ class PropertyFeatures(BaseModel):
     Latitude: float = Field(16.02, ge=4.0, le=21.0, description="Latitude coordinate (Philippines range)")
     Longitude: float = Field(120.23, ge=116.0, le=127.0, description="Longitude coordinate (Philippines range)")
     IsCondo: int = Field(1, ge=0, le=1, description="1 if Condo/Apartment, 0 if House and Lot")
+    Quality: Optional[str] = Field("Standard", description="Construction standard (Economy, Standard, Premium)")
+    Usage: Optional[str] = Field("Residential", description="Usage type (Residential, Commercial, Industrial)")
 
     class Config:
         populate_by_name = True

@@ -173,7 +173,7 @@ const InvestmentDashboard: React.FC<InvestmentDashboardProps> = ({ data, isLoadi
             </svg>
           </div>
           <div>
-            <h3 className="text-lg font-bold text-on-surface leading-tight uppercase">Brokerage Deck</h3>
+            <h3 className="text-lg font-bold text-on-surface leading-tight uppercase">Financing Deck</h3>
             <p className="text-[9px] text-on-faint uppercase tracking-widest font-bold mt-0.5">Amortization & ROI Ledger</p>
           </div>
         </div>
@@ -186,7 +186,7 @@ const InvestmentDashboard: React.FC<InvestmentDashboardProps> = ({ data, isLoadi
               onClick={() => setActiveTab(tab)}
               className={`px-3 py-1.5 rounded-md transition-all font-bold ${activeTab === tab ? 'bg-accent text-white shadow-md' : 'text-on-muted hover:text-on-surface'}`}
             >
-              {tab === 'metrics' ? 'BOM ROI' : tab === 'trend' ? 'Valuation' : 'Bank Rates'}
+              {tab === 'metrics' ? 'Project ROI' : tab === 'trend' ? 'Asset Value' : 'Bank Financing'}
             </button>
           ))}
         </div>
@@ -226,7 +226,7 @@ const InvestmentDashboard: React.FC<InvestmentDashboardProps> = ({ data, isLoadi
             />
 
             <MetricCard
-              label="Est. Monthly Rent Income"
+              label="Est. Completed Rent"
               value={phpFmt(rent)}
               sub="GROSS YIELD COEFF"
               subValue={`${data.gross_rental_yield_pct.toFixed(1)}%`}
@@ -315,7 +315,7 @@ const InvestmentDashboard: React.FC<InvestmentDashboardProps> = ({ data, isLoadi
                       fontSize: '11px',
                       boxShadow: 'var(--shadow-lg)'
                     }}
-                    formatter={(v: any) => [phpFmt(Number(v)), 'Est. Value']}
+                    formatter={(v: any) => [phpFmt(Number(v)), 'Est. Asset Value']}
                   />
                   <Area 
                     type="monotone" 
@@ -328,8 +328,8 @@ const InvestmentDashboard: React.FC<InvestmentDashboardProps> = ({ data, isLoadi
                 </AreaChart>
               </ResponsiveContainer>
             )}
-            <p className="text-[8px] text-on-faint text-center uppercase tracking-widest font-extrabold font-headers mt-1">
-              Valuation Projection Matrix: 3-Year Historical &amp; 5-Year Dynamic appreciation trend
+             <p className="text-[8px] text-on-faint text-center uppercase tracking-widest font-extrabold font-headers mt-1">
+              Asset Value Projection Matrix: 3-Year Historical &amp; 5-Year Dynamic appreciation trend
             </p>
           </div>
         )}

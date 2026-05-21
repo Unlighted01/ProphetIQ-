@@ -50,7 +50,7 @@ const PriceDisplay: React.FC<PriceDisplayProps> = ({ price, low, high }) => {
           Telemetry Estimation
         </span>
         <h3 className="text-xs font-bold text-on-muted uppercase tracking-widest">
-          Market Value Valuation
+          Projected Construction Cost
         </h3>
       </div>
 
@@ -89,12 +89,12 @@ const PriceDisplay: React.FC<PriceDisplayProps> = ({ price, low, high }) => {
       <div className="flex items-center gap-2 bg-primary/10 border border-primary/20 px-4 py-1.5 rounded-full relative z-10 font-headers">
         <span className="w-1.5 h-1.5 rounded-full bg-primary animate-telemetry-pulse" />
         <span className="text-[9px] font-bold text-primary uppercase tracking-widest">
-          ±10% XGBoost Accuracy Limit
+          ±10% Cost Budget Range
         </span>
       </div>
 
       <p className="text-[8px] text-on-faint font-mono uppercase tracking-widest relative z-10 text-center">
-        *REPORT_ID: PQ-{Math.floor(100000 + Math.random() * 900000)} // FIRM_VALUATION_CYCLE_{new Date().getFullYear()}
+        *REPORT_ID: PQ-{Math.floor(100000 + Math.random() * 900000)} // FIRM_COSTING_CYCLE_{new Date().getFullYear()}
       </p>
     </div>
   );

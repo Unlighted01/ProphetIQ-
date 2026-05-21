@@ -146,7 +146,7 @@ const PredictionForm: React.FC<PredictionFormProps> = ({ onSubmit, isLoading, ex
       
       <div className="flex items-center justify-between mb-2 border-b border-border-color/50 pb-4 font-headers">
         <div>
-          <h2 className="text-xl font-bold text-gradient uppercase tracking-wider">PH Property Details</h2>
+          <h2 className="text-xl font-bold text-gradient uppercase tracking-wider">Project Parameters</h2>
           <p className="text-[10px] text-on-faint uppercase tracking-wider font-semibold">Geological & Site Parameters</p>
         </div>
         <span className="text-[9px] text-primary uppercase tracking-widest font-extrabold border border-primary/20 bg-primary/5 px-2.5 py-1 rounded-full">
@@ -328,11 +328,11 @@ const PredictionForm: React.FC<PredictionFormProps> = ({ onSubmit, isLoading, ex
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-on-muted uppercase tracking-wider mb-2 font-headers">Property Type</label>
+              <label className="block text-xs font-bold text-on-muted uppercase tracking-wider mb-2 font-headers">Structure Frame</label>
               <div className="grid grid-cols-2 gap-1 p-1 glass rounded-xl bg-bg-deep/30 border border-border-color font-headers text-[9px]">
                 {[
-                  { value: 1, label: '🏢 Condo' },
-                  { value: 0, label: '🏡 House' },
+                  { value: 1, label: '🏢 Condo/Multi-Level' },
+                  { value: 0, label: '🏡 House/Single-Family' },
                 ].map((opt) => (
                   <button
                     key={opt.value}
@@ -365,10 +365,10 @@ const PredictionForm: React.FC<PredictionFormProps> = ({ onSubmit, isLoading, ex
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
               </svg>
-              Calculating Philippine Market Price...
+              Calculating Projected Build Cost...
             </>
           ) : (
-            '🔍 Generate AI Price Prediction (₱)'
+            '🔍 Generate Technical Cost Report (₱)'
           )}
         </span>
         <span className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"></span>
