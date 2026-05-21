@@ -470,11 +470,11 @@ export default function Home() {
             <div className="sticky top-4 z-40 flex justify-center w-full max-w-xl mx-auto animate-fade-in px-4">
               <div className="glass flex items-center justify-between p-1 rounded-full border border-border-color bg-glass-bg shadow-lg backdrop-blur-md w-full gap-1 overflow-x-auto scrollbar-none">
                 {[
-                  { label: 'Overview', id: 'overview' },
-                  { label: 'AI Advisor', id: 'ai-assessment' },
-                  { label: 'Cost Drivers', id: 'shap-drivers' },
-                  { label: 'Investment', id: 'investment' },
-                  { label: 'Completed Portfolio', id: 'comparables' }
+                  { label: 'Overview',    id: 'overview' },
+                  { label: 'AI Advisor',  id: 'ai-assessment' },
+                  { label: 'Cost Drivers',id: 'shap-drivers' },
+                  { label: 'Investment',  id: 'investment' },
+                  { label: 'Contact Engineer', id: 'contact-engineer' },
                 ].map((item) => (
                   <button
                     key={item.id}
@@ -486,8 +486,15 @@ export default function Home() {
                     {item.label}
                   </button>
                 ))}
+                <a
+                  href="/portfolio"
+                  className="px-3.5 py-1.5 rounded-full text-[9px] font-bold uppercase tracking-widest text-primary hover:bg-primary/10 border border-primary/20 transition-all whitespace-nowrap font-headers flex-shrink-0"
+                >
+                  Portfolio →
+                </a>
               </div>
             </div>
+
 
             {/* Unified 2-Column Technical Report Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -587,7 +594,9 @@ export default function Home() {
       />
 
       {/* Expert Network */}
-      <ContactSection />
+      <div id="contact-engineer" className="scroll-mt-24">
+        <ContactSection />
+      </div>
 
       {/* Footer */}
       <footer className="mt-32 pt-10 border-t border-border-color/30 flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0 text-[10px] text-on-muted uppercase tracking-[0.3em] font-bold">

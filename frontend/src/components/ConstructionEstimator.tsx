@@ -271,36 +271,83 @@ const ConstructionEstimator: React.FC<ConstructionEstimatorProps> = ({
         </div>
       </div>
 
-      {/* Main Budget Aggregate Panel */}
-      <div className="relative z-10 font-headers border-b border-border-color pb-4 flex flex-col md:flex-row md:items-end md:justify-between gap-4">
-        <div>
-          <p className="text-[9px] text-on-faint uppercase tracking-wider font-extrabold mb-1">TOTAL PROJECTED BUILD BUDGET</p>
-          <div className="flex items-baseline gap-2">
-            <span className="text-4xl font-black text-on-surface tracking-tighter tabular-nums font-mono">
-              {formatCurrency(totalCost)}
-            </span>
-            <span className="text-[9px] font-bold text-yellow-500 uppercase tracking-widest bg-yellow-500/10 border border-yellow-500/20 px-2 py-0.5 rounded">
-              {activeGrade} SPEC
-            </span>
+      {/* QS Cost Breakdown Panel — distinct from the top PriceDisplay summary card */}
+      <div className="relative z-10 font-headers border-b border-border-color pb-4 flex flex-col gap-4">
+
+        {/* Row 1: Two primary QS metrics */}
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+
+          {/* Metric A: Direct Construction Cost (pure build, no markups) */}
+          <div>
+            <p className="text-[9px] text-on-faint uppercase tracking-wider font-extrabold mb-1 flex items-center gap-1.5">
+              <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary"></span>
+              DIRECT CONSTRUCTION COST
+              <span className="text-[8px] text-on-faint/60 normal-case tracking-normal font-normal">(materials + labour, pre-markup)</span>
+            </p>
+            <div className="flex items-baseline gap-2">
+              <span className="text-4xl font-black text-on-surface tracking-tighter tabular-nums font-mono">
+                {formatCurrency(directCost)}
+              </span>
+              <span className="text-[9px] font-bold text-yellow-500 uppercase tracking-widest bg-yellow-500/10 border border-yellow-500/20 px-2 py-0.5 rounded">
+                {activeGrade} SPEC
+              </span>
+            </div>
+          </div>
+
+          {/* Metric B: All-In Cost per sqm + Grade Switcher */}
+          <div className="flex flex-col gap-2 items-start sm:items-end">
+            {/* Unit Rate badge */}
+            <div className="p-3 bg-bg-deep border border-border-color rounded-xl flex flex-col items-start sm:items-end">
+              <span className="text-[8px] text-on-faint uppercase tracking-widest font-bold mb-0.5">All-In Rate / sqm</span>
+              <div className="flex items-baseline gap-1">
+                <span className="text-xl font-black text-primary tabular-nums font-mono">
+                  {floorArea > 0 ? formatCurrency(Math.round(totalCost / floorArea)) : '—'}
+                </span>
+                <span className="text-[9px] text-on-muted font-normal">/sqm</span>
+              </div>
+              <span className="text-[8px] text-on-faint/70 mt-0.5">incl. O&amp;P, contingency &amp; permits</span>
+            </div>
+
+            {/* Quality Grade Switcher */}
+            <div className="flex flex-col gap-1 items-start sm:items-end">
+              <span className="text-[8px] text-on-faint uppercase tracking-widest font-bold">Construction Grade</span>
+              <div className="flex bg-bg-deep border border-border-color p-0.5 rounded-lg text-[9px] uppercase tracking-widest font-bold">
+                {(['Economy', 'Standard', 'Premium'] as const).map(grade => (
+                  <button
+                    key={grade}
+                    onClick={() => setActiveGrade(grade)}
+                    className={`px-3 py-1 rounded transition-all font-bold ${activeGrade === grade ? 'bg-yellow-500/20 text-yellow-500 border border-yellow-500/30' : 'text-on-muted hover:text-on-surface border border-transparent'}`}
+                  >
+                    {grade}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Quality Grade Card Switcher */}
-        <div className="flex flex-col gap-1 items-start md:items-end">
-          <span className="text-[8px] text-on-faint uppercase tracking-widest font-bold">Construction Grade Spec</span>
-          <div className="flex bg-bg-deep border border-border-color p-0.5 rounded-lg text-[9px] uppercase tracking-widest font-bold">
-            {(['Economy', 'Standard', 'Premium'] as const).map(grade => (
-              <button
-                key={grade}
-                onClick={() => setActiveGrade(grade)}
-                className={`px-3 py-1 rounded transition-all font-bold ${activeGrade === grade ? 'bg-yellow-500/20 text-yellow-500 border border-yellow-500/30' : 'text-on-muted hover:text-on-surface border border-transparent'}`}
-              >
-                {grade}
-              </button>
-            ))}
-          </div>
+        {/* Row 2: Compact indirect cost summary strip */}
+        <div className="flex flex-wrap items-center gap-2 text-[9px] font-bold uppercase tracking-wider font-headers">
+          <span className="text-on-faint">Indirect Adjustments:</span>
+          <span className="bg-bg-deep border border-border-color px-2 py-0.5 rounded text-on-muted font-mono">
+            O&amp;P {overheadProfitPct}% = {formatCurrency(overheadProfitCost)}
+          </span>
+          <span className="text-on-faint/40">+</span>
+          <span className="bg-bg-deep border border-border-color px-2 py-0.5 rounded text-on-muted font-mono">
+            Contingency {contingencyPct}% = {formatCurrency(contingencyCost)}
+          </span>
+          <span className="text-on-faint/40">+</span>
+          <span className="bg-bg-deep border border-border-color px-2 py-0.5 rounded text-on-muted font-mono">
+            Permits = {formatCurrency(permitsCost)}
+          </span>
+          <span className="text-on-faint/40 ml-auto hidden sm:inline">=</span>
+          <span className="ml-auto sm:ml-0 bg-yellow-500/10 border border-yellow-500/30 px-2 py-0.5 rounded text-yellow-500 font-mono">
+            Total All-In: {formatCurrency(totalCost)}
+          </span>
         </div>
+
       </div>
+
 
       {/* Estimator Content Area */}
       <div className="relative z-10 flex-grow">
@@ -637,50 +684,54 @@ const ConstructionEstimator: React.FC<ConstructionEstimatorProps> = ({
             </div>
 
             {/* Add Custom Material Inline Form */}
-            <div className="p-3.5 bg-bg-deep/20 border border-border-color/60 rounded-xl relative z-10 font-sans">
+            <div className="p-3.5 bg-bg-deep/20 border border-border-color/60 rounded-xl relative z-10 font-sans overflow-hidden">
               <p className="text-[9px] text-on-faint uppercase tracking-wider font-extrabold mb-2 font-headers">ADD CUSTOM MATERIAL / WORK ITEM</p>
-              <div className="flex flex-col sm:flex-row gap-2">
-                <input 
+              <div className="flex flex-col gap-2 min-w-0">
+                {/* Name input — full width row */}
+                <input
                   type="text"
                   placeholder="Item Name (e.g., PVC Pipe, Plywood, Tile Adhesive)"
                   value={newItem.name}
                   onChange={(e) => setNewItem(prev => ({ ...prev, name: e.target.value }))}
-                  className="flex-grow text-xs bg-bg-deep/50 border border-border-color rounded px-3 py-2 font-sans text-on-surface placeholder:text-on-faint font-medium focus:outline-none focus:border-yellow-500/50"
+                  className="w-full min-w-0 text-xs bg-bg-deep/50 border border-border-color rounded px-3 py-2 font-sans text-on-surface placeholder:text-on-faint font-medium focus:outline-none focus:border-yellow-500/50"
                 />
-                <div className="flex gap-2 flex-shrink-0">
-                  <input 
+                {/* Secondary controls row — constrained so they never overflow */}
+                <div className="flex items-center gap-2 min-w-0 flex-wrap">
+                  <input
                     type="number"
                     placeholder="Qty"
                     value={newItem.qty || ''}
                     onChange={(e) => setNewItem(prev => ({ ...prev, qty: Math.max(1, parseInt(e.target.value) || 0) }))}
-                    className="w-16 text-xs bg-bg-deep/50 border border-border-color rounded px-2 text-center py-2 font-mono text-on-surface focus:outline-none focus:border-yellow-500/50"
+                    className="w-16 flex-shrink-0 text-xs bg-bg-deep/50 border border-border-color rounded px-2 text-center py-2 font-mono text-on-surface focus:outline-none focus:border-yellow-500/50"
                   />
-                  <input 
+                  <input
                     type="text"
-                    placeholder="Unit (e.g. Pcs)"
+                    placeholder="Unit"
                     value={newItem.unit}
                     onChange={(e) => setNewItem(prev => ({ ...prev, unit: e.target.value }))}
-                    className="w-20 text-xs bg-bg-deep/50 border border-border-color rounded px-2 text-center py-2 font-sans text-on-surface placeholder:text-on-faint focus:outline-none focus:border-yellow-500/50"
+                    className="w-20 flex-shrink-0 text-xs bg-bg-deep/50 border border-border-color rounded px-2 text-center py-2 font-sans text-on-surface placeholder:text-on-faint focus:outline-none focus:border-yellow-500/50"
                   />
-                  <input 
+                  <input
                     type="number"
-                    placeholder="Price"
+                    placeholder="₱ Price"
                     value={newItem.price || ''}
                     onChange={(e) => setNewItem(prev => ({ ...prev, price: Math.max(0, parseFloat(e.target.value) || 0) }))}
-                    className="w-20 text-xs bg-bg-deep/50 border border-border-color rounded px-2 text-center py-2 font-mono text-on-surface focus:outline-none focus:border-yellow-500/50"
+                    className="w-24 flex-shrink-0 text-xs bg-bg-deep/50 border border-border-color rounded px-2 text-center py-2 font-mono text-on-surface focus:outline-none focus:border-yellow-500/50"
                   />
-                  <button 
+                  <button
                     onClick={handleAddCustomItem}
-                    className="px-3 bg-gradient-to-br from-yellow-500 to-amber-600 hover:from-yellow-600 hover:to-amber-700 text-white font-bold rounded flex items-center justify-center transition-all shadow-[0_0_10px_rgba(245,158,11,0.2)] border border-yellow-500/20 active:scale-95"
+                    className="ml-auto flex-shrink-0 px-4 py-2 bg-gradient-to-br from-yellow-500 to-amber-600 hover:from-yellow-600 hover:to-amber-700 text-white text-xs font-bold rounded flex items-center gap-1.5 transition-all shadow-[0_0_10px_rgba(245,158,11,0.2)] border border-yellow-500/20 active:scale-95"
                     title="Add Custom Item"
                   >
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 4v16m8-8H4" />
                     </svg>
+                    Add
                   </button>
                 </div>
               </div>
             </div>
+
 
             {/* Direct Cost Components Grid */}
             <div className="grid grid-cols-2 gap-4 font-headers text-[9px] uppercase tracking-wider font-bold">
