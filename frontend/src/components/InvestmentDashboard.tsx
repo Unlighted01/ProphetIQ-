@@ -96,6 +96,15 @@ const InvestmentDashboard: React.FC<InvestmentDashboardProps> = ({ data, isLoadi
   const mortgage    = useCountUp(data?.monthly_payment_php ?? null);
   const rent        = useCountUp(data?.estimated_monthly_rent_php ?? null, 1000);
 
+  // Dynamic projected ROI calculations: appreciation + rental yield accumulation
+  const rateFactor = 1 + (appreciationRate / 100);
+  const calculatedRoi = data 
+    ? ((Math.pow(rateFactor, 5) - 1) * 100) + (data.gross_rental_yield_pct * 5)
+    : 0;
+  const dynamicRoi = useCountUp(data ? calculatedRoi : null, 800);
+
+  const cashFlowAbs = useCountUp(data ? Math.abs(data.annual_cash_flow_php) : null, 1100);
+
   if (isLoading) {
     return (
       <div className="glass p-8 rounded-2xl border border-border-color shadow-lg">
@@ -115,14 +124,6 @@ const InvestmentDashboard: React.FC<InvestmentDashboardProps> = ({ data, isLoadi
   if (!data) return null;
 
   const basePrice = predictedPrice || (data.monthly_payment_php * 150);
-  
-  // Real-time calculation factor
-  const rateFactor = 1 + (appreciationRate / 100);
-  
-  // Dynamic projected ROI calculations: appreciation + rental yield accumulation
-  const calculatedRoi = ((Math.pow(rateFactor, 5) - 1) * 100) + (data.gross_rental_yield_pct * 5);
-  const dynamicRoi = useCountUp(calculatedRoi, 800);
-
   const isCashFlowPositive = data.annual_cash_flow_php >= 0;
   const roiColor = dynamicRoi > 30 ? 'text-accent' : dynamicRoi > 0 ? 'text-yellow-500' : 'text-danger';
 
@@ -244,7 +245,7 @@ const InvestmentDashboard: React.FC<InvestmentDashboardProps> = ({ data, isLoadi
               <div>
                 <span className="block text-[9px] text-on-faint uppercase tracking-wider font-extrabold font-headers mb-1">Annual Cash Flow</span>
                 <span className={`text-xl font-bold font-mono tabular-nums ${isCashFlowPositive ? 'text-accent' : 'text-yellow-500'}`}>
-                  {isCashFlowPositive ? '+' : '-'}{phpFmt(useCountUp(Math.abs(data.annual_cash_flow_php), 1100))}
+                  {isCashFlowPositive ? '+' : '-'}{phpFmt(cashFlowAbs)}
                 </span>
               </div>
               <p className="text-[9px] font-bold uppercase tracking-wider text-on-faint mt-2 pt-2 border-t border-border-color/30 font-headers">
