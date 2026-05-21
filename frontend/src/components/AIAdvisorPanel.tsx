@@ -88,7 +88,7 @@ const AIAdvisorPanel: React.FC<AIAdvisorProps> = ({ advice, isLoading, isError, 
       <div className="absolute -top-20 -right-20 w-48 h-48 bg-primary/5 rounded-full blur-[60px] pointer-events-none" />
 
       {/* Header and Tab Selector */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-2 relative z-10">
+      <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-4 mb-2 relative z-10">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-lg shadow-primary/10 flex-shrink-0">
             <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -102,7 +102,7 @@ const AIAdvisorPanel: React.FC<AIAdvisorProps> = ({ advice, isLoading, isError, 
         </div>
 
         {/* Tab Controls */}
-        <div className="flex p-1 rounded-xl bg-bg-deep/45 border border-border-color text-xs self-start md:self-center font-headers">
+        <div className="flex p-1 rounded-xl bg-bg-deep/45 border border-border-color text-xs self-start xl:self-center font-headers">
           <button
             onClick={() => setActiveTab('overview')}
             className={`px-3.5 py-2 rounded-lg transition-all font-bold uppercase tracking-wider text-[9px] ${activeTab === 'overview' ? 'bg-primary text-white shadow-md' : 'text-on-muted hover:text-on-surface hover:bg-white/5'}`}
@@ -185,8 +185,8 @@ const AIAdvisorPanel: React.FC<AIAdvisorProps> = ({ advice, isLoading, isError, 
 
         {/* GEOTECHNICAL TAB */}
         {activeTab === 'geotechnical' && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 animate-fade-in items-center h-full w-full">
-            {/* Left Column: Text Assessments */}
+          <div className="flex flex-col gap-6 animate-fade-in w-full">
+            {/* Text Assessments */}
             <div className="space-y-4 w-full">
               {/* Geotechnical Assessment Card */}
               <div className="bg-warning/[0.03] rounded-xl p-4 border border-warning/20">
@@ -215,8 +215,8 @@ const AIAdvisorPanel: React.FC<AIAdvisorProps> = ({ advice, isLoading, isError, 
               </div>
             </div>
 
-            {/* Right Column: 2D Soil Strata Canvas Visualizer */}
-            <div className="w-full flex justify-center lg:justify-end">
+            {/* 2D Soil Strata Canvas Visualizer */}
+            <div className="w-full flex justify-center border-t border-border-color/30 pt-6">
               <SoilStrataCanvas city={city} isCondo={isCondo} />
             </div>
           </div>
@@ -246,12 +246,12 @@ const AIAdvisorPanel: React.FC<AIAdvisorProps> = ({ advice, isLoading, isError, 
                 </svg>
                 Project Execution Timeline
               </h4>
-              <div className="flex items-center justify-between gap-4 font-headers">
-                <p className="text-xs text-on-muted leading-relaxed flex-grow font-sans font-medium">
+              <div className="flex flex-col gap-3 font-headers">
+                <p className="text-xs text-on-muted leading-relaxed font-sans font-medium">
                   Estimated civil timeline to build execution for this scale of project in Pangasinan.
                 </p>
-                <div className="flex-shrink-0 bg-accent/10 border border-accent/20 text-accent font-extrabold text-xs px-4 py-2.5 rounded-xl text-center shadow-lg uppercase tracking-wider font-mono">
-                  {advice.project_timeline || "6-8 Months"}
+                <div className="inline-block self-start bg-accent/10 border border-accent/20 text-accent font-extrabold text-[10px] px-4 py-2 rounded-xl shadow-lg uppercase tracking-wider font-mono max-w-full break-words whitespace-normal">
+                  Timeline // {advice.project_timeline || "6-8 Months"}
                 </div>
               </div>
             </div>
