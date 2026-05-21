@@ -1,6 +1,8 @@
 import os
 import json
 import logging
+import asyncio
+import httpx
 from fastapi import APIRouter, HTTPException, Request
 import google.generativeai as genai
 from dotenv import load_dotenv
@@ -11,22 +13,6 @@ load_dotenv()
 logger = logging.getLogger("prophetiq.advisor")
 
 router = APIRouter(prefix="/advisor", tags=["Advisor"])
-
-# ─── Gemini setup ─────────────────────────────────────────────────────────────
-
-def _get_model():
-    """Return a fresh Gemini model instance, or None if key is missing."""
-    key = os.getenv("GEMINI_API_KEY")
-    if not key:
-        logger.error("GEMINI_API_KEY is not set in environment variables.")
-        return None
-    try:
-        genai.configure(api_key=key)
-        return genai.GenerativeModel("gemini-2.5-flash")
-    except Exception as e:
-        logger.warning(f"Could not initialize Gemini client: {e}")
-        return None
-
 
 SYSTEM_PROMPT = """
 You are a Chief Construction Engineer and Site Intelligence Expert for ProphetIQ, a firm operating in Pangasinan, Philippines.
@@ -58,21 +44,121 @@ Always return your response as a valid JSON object matching this exact schema:
 Only return the JSON. No markdown formatting around it, no conversational filler.
 """
 
+def _parse_json(text: str) -> AdvisorResponse:
+    """Robust extraction and parsing of the JSON block from LLM output."""
+    start_idx = text.find("{")
+    end_idx = text.rfind("}")
+    if start_idx == -1 or end_idx == -1:
+        raise ValueError("Could not find valid JSON object boundaries in response text.")
+    
+    json_str = text[start_idx:end_idx+1]
+    parsed_dict = json.loads(json_str)
+    
+    # Ensure all required fields exist or set safe defaults to prevent runtime errors
+    required_fields = {
+        "summary": "AI advisor summary unavailable.",
+        "why_this_price": "Price driver analysis unavailable.",
+        "red_flags": [],
+        "investment_take": "Investment notes unavailable.",
+        "recommendation": "HOLD",
+        "recommendation_reason": "Advice details unavailable.",
+        "geotechnical_assessment": "Geotechnical notes unavailable.",
+        "structural_advice": "Structural framing details unavailable.",
+        "regulatory_notes": "Zoning details unavailable.",
+        "project_timeline": "6-8 Months"
+    }
+    
+    for field, default in required_fields.items():
+        if field not in parsed_dict or parsed_dict[field] is None:
+            parsed_dict[field] = default
+            
+    return AdvisorResponse(**parsed_dict)
+
+
+# ─── API Helper Calls ─────────────────────────────────────────────────────────
+
+async def _call_gemini(user_prompt: str) -> str:
+    """Call Gemini API using the official SDK."""
+    key = os.getenv("GEMINI_API_KEY") or os.getenv("gemini_api_key")
+    if not key:
+        raise ValueError("GEMINI_API_KEY is not set.")
+    
+    def _sync_call():
+        genai.configure(api_key=key)
+        model = genai.GenerativeModel("gemini-2.5-flash")
+        response = model.generate_content(
+            user_prompt,
+            generation_config=genai.types.GenerationConfig(
+                response_mime_type="application/json",
+            ),
+        )
+        return response.text.strip()
+
+    loop = asyncio.get_event_loop()
+    return await loop.run_in_executor(None, _sync_call)
+
+
+async def _call_claude(user_prompt: str) -> str:
+    """Call Claude API using httpx."""
+    key = os.getenv("CLAUDE_API_KEY") or os.getenv("claude_api_key")
+    if not key:
+        raise ValueError("CLAUDE_API_KEY is not set.")
+    
+    async with httpx.AsyncClient(timeout=30.0) as client:
+        headers = {
+            "x-api-key": key,
+            "anthropic-version": "2023-06-01",
+            "content-type": "application/json"
+        }
+        payload = {
+            "model": "claude-3-5-sonnet-20241022",
+            "max_tokens": 2048,
+            "system": SYSTEM_PROMPT,
+            "messages": [
+                {"role": "user", "content": user_prompt}
+            ]
+        }
+        response = await client.post("https://api.anthropic.com/v1/messages", json=payload, headers=headers)
+        response.raise_for_status()
+        res_json = response.json()
+        return res_json["content"][0]["text"].strip()
+
+
+async def _call_grok(user_prompt: str) -> str:
+    """Call Grok (xAI) API using httpx (grok-4.3)."""
+    key = os.getenv("GROK_API_KEY") or os.getenv("grok_api_key")
+    if not key:
+        raise ValueError("GROK_API_KEY is not set.")
+    
+    async with httpx.AsyncClient(timeout=30.0) as client:
+        headers = {
+            "Authorization": f"Bearer {key}",
+            "Content-Type": "application/json"
+        }
+        payload = {
+            "model": "grok-4.3",
+            "messages": [
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": user_prompt}
+            ],
+            "temperature": 0.2
+        }
+        response = await client.post("https://api.x.ai/v1/chat/completions", json=payload, headers=headers)
+        response.raise_for_status()
+        res_json = response.json()
+        return res_json["choices"][0]["message"]["content"].strip()
+
+
+
+# ─── Endpoints ────────────────────────────────────────────────────────────────
 
 @router.post("/", response_model=AdvisorResponse)
 async def get_property_advice(body: AdvisorRequest):
-    """Get AI-powered construction & investment advice from Gemini."""
-    active_model = _get_model()
-    if not active_model:
-        raise HTTPException(
-            status_code=503,
-            detail="Gemini AI is unavailable. Please ensure GEMINI_API_KEY is set in Railway environment variables.",
-        )
-
+    """Get AI-powered construction & investment advice rotating between Gemini, Claude, and Grok."""
     features = body.features
     prediction = body.prediction
 
-    # Build prompt
+    # Build standard prompt
     try:
         shap_text = "\n".join(
             [f"- {f['feature']}: ₱{f['impact']:+,.0f}" for f in (prediction.top_features or [])]
@@ -81,8 +167,6 @@ async def get_property_advice(body: AdvisorRequest):
         shap_text = "(SHAP data unavailable)"
 
     user_prompt = f"""
-{SYSTEM_PROMPT}
-
 Analyze this property from a construction and engineering perspective for a potential project in {features.City}:
 
 PROPERTY DETAILS:
@@ -103,87 +187,137 @@ TOP PRICE DRIVERS (SHAP analysis):
 {shap_text}
 
 Provide your engineering and site feasibility analysis as the requested JSON structure.
-    """
+"""
 
+    errors = []
+
+    # 1. Attempt Gemini
     try:
-        response = active_model.generate_content(
-            user_prompt,
-            generation_config=genai.types.GenerationConfig(
-                response_mime_type="application/json",
-            ),
-        )
-
-        response_text = response.text.strip()
-
-        # Strip markdown fences if present
-        for fence in ("```json", "```"):
-            if response_text.startswith(fence):
-                response_text = response_text[len(fence):]
-        if response_text.endswith("```"):
-            response_text = response_text[:-3]
-
-        parsed = json.loads(response_text.strip())
-        return AdvisorResponse(**parsed)
-
+        logger.info("Attempting AI advice using Gemini...")
+        response_text = await _call_gemini(user_prompt)
+        parsed = _parse_json(response_text)
+        logger.info("Successfully generated AI advice using Gemini.")
+        return parsed
     except Exception as e:
-        logger.error(f"Gemini advisor failed: {type(e).__name__}: {e}")
-        raise HTTPException(
-            status_code=503,
-            detail=f"AI analysis failed: {str(e)[:200]}",
-        )
+        err_msg = f"Gemini failed: {type(e).__name__}: {e}"
+        logger.warning(err_msg)
+        errors.append(err_msg)
+
+    # 2. Attempt Claude fallback
+    try:
+        logger.info("Attempting AI advice fallback to Claude...")
+        response_text = await _call_claude(user_prompt)
+        parsed = _parse_json(response_text)
+        logger.info("Successfully generated AI advice using Claude.")
+        return parsed
+    except Exception as e:
+        err_msg = f"Claude fallback failed: {type(e).__name__}: {e}"
+        logger.warning(err_msg)
+        errors.append(err_msg)
+
+    # 3. Attempt Grok fallback
+    try:
+        logger.info("Attempting AI advice fallback to Grok...")
+        response_text = await _call_grok(user_prompt)
+        parsed = _parse_json(response_text)
+        logger.info("Successfully generated AI advice using Grok.")
+        return parsed
+    except Exception as e:
+        err_msg = f"Grok fallback failed: {type(e).__name__}: {e}"
+        logger.warning(err_msg)
+        errors.append(err_msg)
+
+    # All providers failed
+    error_summary = " | ".join(errors)
+    logger.error(f"All AI Site Advisor models failed or hit limits: {error_summary}")
+    raise HTTPException(
+        status_code=503,
+        detail=f"AI Site Advisor service is currently unavailable. All fallback options exhausted: {error_summary}"
+    )
 
 
 @router.get("/diagnose")
-async def diagnose_gemini(request: Request):
-    """Diagnose the Gemini API setup and connection on the backend."""
+async def diagnose_advisor_apis(request: Request):
+    """Diagnose the Gemini, Claude, and Grok API setups and connections."""
     secret = request.headers.get("X-Admin-Key")
     if secret != os.getenv("ADMIN_SECRET", ""):
         raise HTTPException(status_code=403, detail="Forbidden")
-    key = os.getenv("GEMINI_API_KEY")
-    if not key:
-        return {
-            "status": "error",
-            "message": "GEMINI_API_KEY is not set in environment variables.",
-            "keys_in_env": list(os.environ.keys())
-        }
 
-    masked_key = f"{key[:4]}...{key[-4:]}" if len(key) > 8 else "too_short"
-    available_models = []
-    
-    try:
-        genai.configure(api_key=key)
-        
-        # Get list of supported models
+    results = {}
+
+    # 1. Diagnose Gemini
+    gemini_key = os.getenv("GEMINI_API_KEY") or os.getenv("gemini_api_key")
+    if not gemini_key:
+        results["gemini"] = {"status": "missing", "message": "GEMINI_API_KEY is not set."}
+    else:
         try:
-            for m in genai.list_models():
-                available_models.append({
-                    "name": m.name,
-                    "supported_methods": m.supported_generation_methods,
-                    "display_name": m.display_name
-                })
-        except Exception as list_err:
-            available_models = [f"Failed to list models: {str(list_err)}"]
+            genai.configure(api_key=gemini_key)
+            model = genai.GenerativeModel("gemini-2.5-flash")
+            response = model.generate_content("Say 'Gemini is online!'")
+            results["gemini"] = {
+                "status": "success",
+                "message": "Connection check passed!",
+                "masked_key": f"{gemini_key[:4]}...{gemini_key[-4:]}" if len(gemini_key) > 8 else "short",
+                "response": response.text.strip()
+            }
+        except Exception as e:
+            results["gemini"] = {"status": "failed", "error": str(e)}
 
-        model = genai.GenerativeModel("gemini-2.5-flash")
-        response = model.generate_content("Say 'Gemini is online!'")
-        
-        return {
-            "status": "success",
-            "message": "Gemini connection test passed!",
-            "key_length": len(key),
-            "key_masked": masked_key,
-            "available_models": available_models,
-            "gemini_response": response.text.strip()
-        }
-    except Exception as e:
-        return {
-            "status": "failed",
-            "message": "Failed to connect to Gemini API.",
-            "key_length": len(key),
-            "key_masked": masked_key,
-            "available_models": available_models,
-            "error_type": type(e).__name__,
-            "error_detail": str(e)
-        }
+    # 2. Diagnose Claude
+    claude_key = os.getenv("CLAUDE_API_KEY") or os.getenv("claude_api_key")
+    if not claude_key:
+        results["claude"] = {"status": "missing", "message": "CLAUDE_API_KEY is not set."}
+    else:
+        try:
+            async with httpx.AsyncClient(timeout=10.0) as client:
+                headers = {
+                    "x-api-key": claude_key,
+                    "anthropic-version": "2023-06-01",
+                    "content-type": "application/json"
+                }
+                payload = {
+                    "model": "claude-3-5-sonnet-20241022",
+                    "max_tokens": 10,
+                    "messages": [{"role": "user", "content": "Say 'Claude is online!'"}]
+                }
+                response = await client.post("https://api.anthropic.com/v1/messages", json=payload, headers=headers)
+                response.raise_for_status()
+                res_json = response.json()
+                results["claude"] = {
+                    "status": "success",
+                    "message": "Connection check passed!",
+                    "masked_key": f"{claude_key[:4]}...{claude_key[-4:]}" if len(claude_key) > 8 else "short",
+                    "response": res_json["content"][0]["text"].strip()
+                }
+        except Exception as e:
+            results["claude"] = {"status": "failed", "error": str(e)}
 
+    # 3. Diagnose Grok
+    grok_key = os.getenv("GROK_API_KEY") or os.getenv("grok_api_key")
+    if not grok_key:
+        results["grok"] = {"status": "missing", "message": "GROK_API_KEY is not set."}
+    else:
+        try:
+            async with httpx.AsyncClient(timeout=10.0) as client:
+                headers = {
+                    "Authorization": f"Bearer {grok_key}",
+                    "Content-Type": "application/json"
+                }
+                payload = {
+                    "model": "grok-4.3",
+                    "messages": [{"role": "user", "content": "Say 'Grok is online!'"}],
+                    "max_tokens": 10
+                }
+                response = await client.post("https://api.x.ai/v1/chat/completions", json=payload, headers=headers)
+                response.raise_for_status()
+                res_json = response.json()
+                results["grok"] = {
+                    "status": "success",
+                    "message": "Connection check passed!",
+                    "masked_key": f"{grok_key[:4]}...{grok_key[-4:]}" if len(grok_key) > 8 else "short",
+                    "response": res_json["choices"][0]["message"]["content"].strip()
+                }
+        except Exception as e:
+            results["grok"] = {"status": "failed", "error": str(e)}
 
+    return results
