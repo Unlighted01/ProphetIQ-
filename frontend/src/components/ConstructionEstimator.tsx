@@ -83,8 +83,71 @@ const ConstructionEstimator: React.FC<ConstructionEstimatorProps> = ({
   const roofingCost = included.Roofing ? roofingQty * prices.Roofing : 0;
   const openingsCost = included.Openings ? openingsQty * prices.Openings : 0;
 
+  // Custom materials type
+  interface CustomMaterial {
+    id: string;
+    name: string;
+    qty: number;
+    unit: string;
+    price: number;
+    included: boolean;
+  }
+
+  // Custom materials list state
+  const [customMaterials, setCustomMaterials] = useState<CustomMaterial[]>([]);
+
+  // Input form state for new custom materials
+  const [newItem, setNewItem] = useState({
+    name: '',
+    qty: 10,
+    unit: 'Pcs',
+    price: 150
+  });
+
+  const handleAddCustomItem = () => {
+    if (!newItem.name.trim()) return;
+    const item: CustomMaterial = {
+      id: Math.random().toString(36).substring(2, 9),
+      name: newItem.name.trim(),
+      qty: newItem.qty,
+      unit: newItem.unit.trim() || 'Pcs',
+      price: newItem.price,
+      included: true
+    };
+    setCustomMaterials(prev => [...prev, item]);
+    setNewItem({
+      name: '',
+      qty: 10,
+      unit: 'Pcs',
+      price: 150
+    });
+  };
+
+  const handleCustomPriceChange = (id: string, val: string) => {
+    const num = parseFloat(val) || 0;
+    setCustomMaterials(prev => prev.map(item => item.id === id ? { ...item, price: num } : item));
+  };
+
+  const handleCustomQtyChange = (id: string, val: string) => {
+    const num = parseInt(val) || 0;
+    setCustomMaterials(prev => prev.map(item => item.id === id ? { ...item, qty: Math.max(1, num) } : item));
+  };
+
+  const toggleCustomIncluded = (id: string) => {
+    setCustomMaterials(prev => prev.map(item => item.id === id ? { ...item, included: !item.included } : item));
+  };
+
+  const handleDeleteCustomItem = (id: string) => {
+    setCustomMaterials(prev => prev.filter(item => item.id !== id));
+  };
+
+  // Custom materials costs
+  const customMaterialsCost = customMaterials.reduce((sum, item) => {
+    return sum + (item.included ? item.qty * item.price : 0);
+  }, 0);
+
   // Aggregate math
-  const totalMaterials = cementCost + steelCost + sandCost + chbCost + nailsCost + finishingCost + mepCost + roofingCost + openingsCost;
+  const totalMaterials = cementCost + steelCost + sandCost + chbCost + nailsCost + finishingCost + mepCost + roofingCost + openingsCost + customMaterialsCost;
   const labor = totalMaterials * 0.667;
   const totalCost = totalMaterials + labor;
 
@@ -399,8 +462,107 @@ const ConstructionEstimator: React.FC<ConstructionEstimatorProps> = ({
               </td>
               <td className="py-2.5 text-right font-extrabold text-on-surface tabular-nums">{formatCurrency(openingsCost)}</td>
             </tr>
+
+            {/* Custom Materials */}
+            {customMaterials.map(item => (
+              <tr key={item.id} className={`hover:bg-white/5 transition-colors ${!item.included ? 'opacity-35' : ''}`}>
+                <td className="py-2.5">
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input 
+                      type="checkbox" 
+                      checked={item.included} 
+                      onChange={() => toggleCustomIncluded(item.id)}
+                      className="sr-only peer"
+                    />
+                    <div className="w-7 h-4 bg-bg-deep border border-border-color peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-3 peer-checked:after:bg-white after:content-[''] after:absolute after:top-[3px] after:left-[3px] after:bg-text-muted after:rounded-full after:h-2.5 after:w-2.5 after:transition-all peer-checked:bg-yellow-500 transition-all"></div>
+                  </label>
+                </td>
+                <td className="py-2.5 font-bold text-on-surface font-sans">
+                  <div className="flex items-center gap-1.5">
+                    <button 
+                      onClick={() => handleDeleteCustomItem(item.id)}
+                      className="text-red-500 hover:text-red-400 p-0.5 rounded hover:bg-red-500/10 transition-colors flex-shrink-0"
+                      title="Delete custom item"
+                    >
+                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
+                    <span>{item.name}</span>
+                  </div>
+                </td>
+                <td className="py-2.5 text-center font-bold tabular-nums text-primary">
+                  <div className="flex items-center justify-center gap-1">
+                    <input 
+                      type="number" 
+                      value={item.qty} 
+                      onChange={(e) => handleCustomQtyChange(item.id, e.target.value)}
+                      className="w-10 text-center bg-bg-deep/50 border border-border-color rounded py-0.5 font-bold text-on-surface font-mono"
+                    />
+                    <span className="text-[10px] text-on-muted lowercase font-sans">{item.unit}</span>
+                  </div>
+                </td>
+                <td className="py-2.5 text-center">
+                  <input 
+                    type="number" 
+                    value={item.price} 
+                    onChange={(e) => handleCustomPriceChange(item.id, e.target.value)}
+                    className="w-16 text-center bg-bg-deep/50 border border-border-color rounded py-0.5 font-bold text-on-surface"
+                  />
+                </td>
+                <td className="py-2.5 text-right font-extrabold text-on-surface tabular-nums">
+                  {formatCurrency(item.included ? item.qty * item.price : 0)}
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
+      </div>
+
+      {/* Add Custom Material Inline Form */}
+      <div className="mb-4 p-3.5 bg-bg-deep/20 border border-border-color/60 rounded-xl relative z-10 font-sans">
+        <p className="text-[9px] text-on-faint uppercase tracking-wider font-extrabold mb-2 font-headers">ADD CUSTOM MATERIAL / WORK ITEM</p>
+        <div className="flex flex-col sm:flex-row gap-2">
+          <input 
+            type="text"
+            placeholder="Item Name (e.g., PVC Pipe, Plywood, Tile Adhesive)"
+            value={newItem.name}
+            onChange={(e) => setNewItem(prev => ({ ...prev, name: e.target.value }))}
+            className="flex-grow text-xs bg-bg-deep/50 border border-border-color rounded px-3 py-2 font-sans text-on-surface placeholder:text-on-faint font-medium focus:outline-none focus:border-yellow-500/50"
+          />
+          <div className="flex gap-2 flex-shrink-0">
+            <input 
+              type="number"
+              placeholder="Qty"
+              value={newItem.qty || ''}
+              onChange={(e) => setNewItem(prev => ({ ...prev, qty: Math.max(1, parseInt(e.target.value) || 0) }))}
+              className="w-16 text-xs bg-bg-deep/50 border border-border-color rounded px-2 text-center py-2 font-mono text-on-surface focus:outline-none focus:border-yellow-500/50"
+            />
+            <input 
+              type="text"
+              placeholder="Unit (e.g. Pcs)"
+              value={newItem.unit}
+              onChange={(e) => setNewItem(prev => ({ ...prev, unit: e.target.value }))}
+              className="w-20 text-xs bg-bg-deep/50 border border-border-color rounded px-2 text-center py-2 font-sans text-on-surface placeholder:text-on-faint focus:outline-none focus:border-yellow-500/50"
+            />
+            <input 
+              type="number"
+              placeholder="Price"
+              value={newItem.price || ''}
+              onChange={(e) => setNewItem(prev => ({ ...prev, price: Math.max(0, parseFloat(e.target.value) || 0) }))}
+              className="w-20 text-xs bg-bg-deep/50 border border-border-color rounded px-2 text-center py-2 font-mono text-on-surface focus:outline-none focus:border-yellow-500/50"
+            />
+            <button 
+              onClick={handleAddCustomItem}
+              className="px-3 bg-gradient-to-br from-yellow-500 to-amber-600 hover:from-yellow-600 hover:to-amber-700 text-white font-bold rounded flex items-center justify-center transition-all shadow-[0_0_10px_rgba(245,158,11,0.2)] border border-yellow-500/20 active:scale-95"
+              title="Add Custom Item"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 4v16m8-8H4" />
+              </svg>
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Aggregate breakdown and progress split bar */}
