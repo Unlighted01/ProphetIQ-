@@ -11,7 +11,7 @@ from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
-from routers import predict, advisor, investment
+from routers import predict, advisor, investment, geocode
 from schemas.property import HealthResponse
 from services.predictor import load_artifacts, is_model_loaded
 
@@ -65,6 +65,7 @@ app.add_middleware(
 app.include_router(predict.router, prefix="/api/v1")
 app.include_router(advisor.router, prefix="/api/v1")
 app.include_router(investment.router, prefix="/api/v1")
+app.include_router(geocode.router, prefix="/api/v1")
 
 @app.get("/", response_model=HealthResponse, tags=["Health"])
 async def root():

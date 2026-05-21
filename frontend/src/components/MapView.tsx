@@ -5,6 +5,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from 're
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import { toast } from 'sonner';
+import { reverseGeocodeProxy } from '@/lib/api';
 
 // Fix for default marker icons in Leaflet with Webpack/Next
 const DefaultIcon = L.icon({
@@ -84,11 +85,7 @@ const LocationPicker: React.FC<{
       setMarkerState('validating');
 
       try {
-        const res = await fetch(
-          `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lng=${lng}&format=json`,
-          { headers: { 'Accept-Language': 'en' } }
-        );
-        const data = await res.json();
+        const data = await reverseGeocodeProxy(lat, lng);
 
         const isInPH = data.address?.country_code === 'ph';
         const isOnLand = !!(

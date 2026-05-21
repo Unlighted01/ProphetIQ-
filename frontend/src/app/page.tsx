@@ -11,7 +11,9 @@ import RecommendedProperties from '@/components/RecommendedProperties';
 import ContactSection from '@/components/ContactSection';
 import ConstructionEstimator from '@/components/ConstructionEstimator';
 import MaterialCanvassing from '@/components/MaterialCanvassing';
+import SavedComparisonCockpit, { SavedProject } from '@/components/SavedComparisonCockpit';
 import { predictPrice, checkHealth, getAIAdvice, getInvestmentMetrics } from '@/lib/api';
+import { exportToPDF } from '@/lib/pdf_exporter';
 import dynamic from 'next/dynamic';
 
 // Dynamic import for MapView to prevent SSR issues with Leaflet
@@ -92,6 +94,89 @@ export default function Home() {
   const [advisorData, setAdvisorData] = useState<any>(null);
   const [investmentData, setInvestmentData] = useState<any>(null);
   const [lastFeatures, setLastFeatures] = useState<any>(null);
+
+  // Saved Projects comparison deck state
+  const [savedProjects, setSavedProjects] = useState<SavedProject[]>([]);
+
+  // Local Storage Sync on Mount
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('saved_projects');
+      if (stored) {
+        setSavedProjects(JSON.parse(stored));
+      }
+    } catch (e) {
+      console.error('Failed to load saved projects:', e);
+    }
+  }, []);
+
+  const updateSavedProjects = (newProjects: SavedProject[]) => {
+    setSavedProjects(newProjects);
+    try {
+      localStorage.setItem('saved_projects', JSON.stringify(newProjects));
+    } catch (e) {
+      console.error('Failed to save projects to localStorage:', e);
+    }
+  };
+
+  const handleSaveProject = () => {
+    if (!prediction || !lastFeatures) return;
+
+    const isAlreadyBookmarked = savedProjects.some(
+      (p) => 
+        p.city === lastFeatures.City &&
+        p.features.Bedrooms === lastFeatures.Bedrooms &&
+        p.features.Bath === lastFeatures.Bath &&
+        p.features['Floor_area (sqm)'] === lastFeatures['Floor_area (sqm)'] &&
+        p.features['Land_area (sqm)'] === lastFeatures['Land_area (sqm)'] &&
+        p.features.IsCondo === lastFeatures.IsCondo &&
+        p.predictedPrice === prediction.predicted_price
+    );
+
+    if (isAlreadyBookmarked) {
+      toast.warning('Already saved!', {
+        description: 'This property has already been added to your comparison deck.',
+      });
+      return;
+    }
+
+    const newProject: SavedProject = {
+      id: Date.now().toString(),
+      timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+      city: lastFeatures.City,
+      features: {
+        Bedrooms: lastFeatures.Bedrooms,
+        Bath: lastFeatures.Bath,
+        'Floor_area (sqm)': lastFeatures['Floor_area (sqm)'],
+        'Land_area (sqm)': lastFeatures['Land_area (sqm)'],
+        IsCondo: lastFeatures.IsCondo,
+      },
+      predictedPrice: prediction.predicted_price,
+      rent: investmentData?.estimated_monthly_rent_php || 0,
+      yield: investmentData?.gross_rental_yield_pct || 0,
+      roi: investmentData?.roi_5yr_pct || 0,
+    };
+
+    const updated = [newProject, ...savedProjects];
+    updateSavedProjects(updated);
+    toast.success('Site bookmarked!', {
+      description: `Added to your Comparison Cockpit under ${lastFeatures.City}.`,
+    });
+  };
+
+  const handleExportPDF = async () => {
+    const cityName = lastFeatures?.City || 'Pangasinan';
+    const toastId = toast.loading('Generating blueprint PDF...', {
+      description: 'Rendering high-resolution report elements',
+    });
+    try {
+      await exportToPDF('results-section', cityName);
+      toast.success('Blueprint downloaded!', { id: toastId });
+    } catch (e: any) {
+      console.error(e);
+      toast.error('Failed to export PDF', { id: toastId, description: e.message || 'Unknown error' });
+    }
+  };
 
   // Location state (shared between Form and Map)
   const [currentLocation, setCurrentLocation] = useState({
@@ -346,13 +431,31 @@ export default function Home() {
         {prediction ? (
           <div className="animate-fade-in space-y-12">
             {/* Report Header */}
-            <div className="border-l-4 border-yellow-500 pl-6 py-2">
-              <h2 className="text-3xl font-black text-text-primary tracking-tight">
-                Technical Intelligence Report
-              </h2>
-              <p className="text-text-muted text-sm uppercase tracking-widest font-bold">
-                Project Site Analysis: {lastFeatures?.City}, Pangasinan
-              </p>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-l-4 border-yellow-500 pl-6 py-2">
+              <div>
+                <h2 className="text-3xl font-black text-text-primary tracking-tight">
+                  Technical Intelligence Report
+                </h2>
+                <p className="text-text-muted text-sm uppercase tracking-widest font-bold">
+                  Project Site Analysis: {lastFeatures?.City}, Pangasinan
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-3 self-start sm:self-center">
+                <button
+                  onClick={handleSaveProject}
+                  className="flex items-center gap-2 bg-gradient-to-r from-yellow-500 to-amber-600 hover:from-yellow-600 hover:to-amber-700 text-white font-extrabold text-xs px-5 py-2.5 rounded-full shadow-lg hover:shadow-yellow-500/20 active:scale-95 transition-all"
+                >
+                  <span>⭐</span>
+                  <span>Save Site to Cockpit</span>
+                </button>
+                <button
+                  onClick={handleExportPDF}
+                  className="flex items-center gap-2 bg-white/5 hover:bg-white/10 text-white border border-white/10 font-extrabold text-xs px-5 py-2.5 rounded-full shadow-lg active:scale-95 transition-all"
+                >
+                  <span>📄</span>
+                  <span>Download Blueprint PDF</span>
+                </button>
+              </div>
             </div>
 
             {/* Smooth Anchor Sub-Navigation */}
@@ -401,7 +504,13 @@ export default function Home() {
               {/* Right Column: AI & Investment Intelligence */}
               <div className="space-y-8">
                 <div id="ai-assessment" className="scroll-mt-24">
-                  <AIAdvisorPanel advice={advisorData} isLoading={isAdvisorLoading} isError={advisorError} />
+                  <AIAdvisorPanel 
+                    advice={advisorData} 
+                    isLoading={isAdvisorLoading} 
+                    isError={advisorError} 
+                    city={lastFeatures?.City}
+                    isCondo={Number(lastFeatures?.IsCondo) === 1}
+                  />
                 </div>
                 <MaterialCanvassing />
                 <div id="investment" className="scroll-mt-24">
@@ -453,6 +562,20 @@ export default function Home() {
           )
         )}
       </div>
+
+      {/* Comparison Cockpit */}
+      <SavedComparisonCockpit
+        projects={savedProjects}
+        onRemoveProject={(id) => {
+          const updated = savedProjects.filter(p => p.id !== id);
+          updateSavedProjects(updated);
+          toast.success('Property removed from deck.');
+        }}
+        onClearAll={() => {
+          updateSavedProjects([]);
+          toast.success('Workspace cleared successfully.');
+        }}
+      />
 
       {/* Expert Network */}
       <ContactSection />

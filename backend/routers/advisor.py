@@ -49,7 +49,11 @@ Always return your response as a valid JSON object matching this exact schema:
   "red_flags": ["specific concern 1", "specific concern 2"],
   "investment_take": "2-3 sentences on investment potential in this specific Philippine city",
   "recommendation": "BUY or HOLD or AVOID",
-  "recommendation_reason": "one sentence explaining the recommendation"
+  "recommendation_reason": "one sentence explaining the recommendation",
+  "geotechnical_assessment": "Geotechnical / soil hazard evaluation (e.g. flood probability, liquefaction zone warning if in Dagupan/Calasiao, sand content)",
+  "structural_advice": "Civil/structural framing recommendations (e.g. standard reinforced concrete, structural steel, elevated floor slab level, pile foundations)",
+  "regulatory_notes": "Building permits, easement setbacks (Pangasinan local rules), zoning compliance",
+  "project_timeline": "Estimated project schedule (e.g. '6-8 Months' or '10-12 Months' based on size)"
 }
 Only return the JSON. No markdown formatting around it, no conversational filler.
 """

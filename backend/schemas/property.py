@@ -60,6 +60,10 @@ class AdvisorResponse(BaseModel):
     investment_take: str
     recommendation: str
     recommendation_reason: str
+    geotechnical_assessment: str
+    structural_advice: str
+    regulatory_notes: str
+    project_timeline: str
 
 
 class InvestmentRequest(BaseModel):

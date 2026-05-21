@@ -113,3 +113,12 @@ export async function checkHealth() {
     return { status: "offline" };
   }
 }
+
+export async function reverseGeocodeProxy(lat: number, lng: number): Promise<any> {
+  const response = await fetch(`${API_BASE_URL}/geocode/reverse?lat=${lat}&lng=${lng}`);
+  const data = await parseResponse(response);
+  if (!response.ok) {
+    throw new Error(humanizeError(response.status, data?.detail));
+  }
+  return data;
+}
