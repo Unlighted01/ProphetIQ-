@@ -93,8 +93,21 @@ const InvestmentDashboard: React.FC<InvestmentDashboardProps> = ({ data, isLoadi
     return () => observer.disconnect();
   }, []);
 
-  const mortgage    = useCountUp(data?.monthly_payment_php ?? null);
-  const rent        = useCountUp(data?.estimated_monthly_rent_php ?? null, 1000);
+  const basePrice = predictedPrice || (data ? (data.monthly_payment_php * 150) : 0);
+  const loanAmount = basePrice * 0.8;
+
+  const calculateAmortization = (rate: number, years = 20) => {
+    const r = (rate / 100) / 12;
+    const n = years * 12;
+    if (n <= 0 || r <= 0) return 0;
+    return loanAmount * (r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
+  };
+
+  const calculatedMortgage = data ? calculateAmortization(7.00, 20) : 0;
+  const mortgage = useCountUp(calculatedMortgage);
+
+  const calculatedRent = data ? (basePrice * (data.gross_rental_yield_pct || 6.5) / 100) / 12 : 0;
+  const rent = useCountUp(calculatedRent, 1000);
 
   // Dynamic projected ROI calculations: appreciation + rental yield accumulation
   const rateFactor = 1 + (appreciationRate / 100);
@@ -103,7 +116,8 @@ const InvestmentDashboard: React.FC<InvestmentDashboardProps> = ({ data, isLoadi
     : 0;
   const dynamicRoi = useCountUp(data ? calculatedRoi : null, 800);
 
-  const cashFlowAbs = useCountUp(data ? Math.abs(data.annual_cash_flow_php) : null, 1100);
+  const calculatedCashFlow = (calculatedRent * 12) - (calculatedMortgage * 12);
+  const cashFlowAbs = useCountUp(data ? Math.abs(calculatedCashFlow) : null, 1100);
 
   if (isLoading) {
     return (
@@ -123,8 +137,7 @@ const InvestmentDashboard: React.FC<InvestmentDashboardProps> = ({ data, isLoadi
 
   if (!data) return null;
 
-  const basePrice = predictedPrice || (data.monthly_payment_php * 150);
-  const isCashFlowPositive = data.annual_cash_flow_php >= 0;
+  const isCashFlowPositive = calculatedCashFlow >= 0;
   const roiColor = dynamicRoi > 30 ? 'text-accent' : dynamicRoi > 0 ? 'text-yellow-500' : 'text-danger';
 
   // --- Theme-Aware Recharts Setup ---
@@ -142,14 +155,6 @@ const InvestmentDashboard: React.FC<InvestmentDashboardProps> = ({ data, isLoadi
     { year: '2030', Price: Math.round(basePrice * Math.pow(rateFactor, 4)), type: 'Forecast' },
     { year: '2031', Price: Math.round(basePrice * Math.pow(rateFactor, 5)), type: 'Forecast' },
   ];
-
-  // --- Bank Rates Amortization Calculations ---
-  const loanAmount = basePrice * 0.8;
-  const calculateAmortization = (rate: number, years = 20) => {
-    const r = (rate / 100) / 12;
-    const n = years * 12;
-    return loanAmount * (r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
-  };
 
   const bankRates = [
     { name: 'BPI', rate: 6.88, type: 'Fixed 1-Yr', tenure: 'Up to 20 Yrs', payment: calculateAmortization(6.88), tag: 'Lowest Rate' },

@@ -94,6 +94,7 @@ export default function Home() {
   const [advisorData, setAdvisorData] = useState<any>(null);
   const [investmentData, setInvestmentData] = useState<any>(null);
   const [lastFeatures, setLastFeatures] = useState<any>(null);
+  const [estimatorCost, setEstimatorCost] = useState<{ total: number; low: number; high: number } | null>(null);
 
   // Saved Projects comparison deck state
   const [savedProjects, setSavedProjects] = useState<SavedProject[]>([]);
@@ -122,6 +123,8 @@ export default function Home() {
   const handleSaveProject = () => {
     if (!prediction || !lastFeatures) return;
 
+    const activePrice = estimatorCost?.total ?? prediction.predicted_price;
+
     const isAlreadyBookmarked = savedProjects.some(
       (p) => 
         p.city === lastFeatures.City &&
@@ -130,7 +133,7 @@ export default function Home() {
         p.features['Floor_area (sqm)'] === lastFeatures['Floor_area (sqm)'] &&
         p.features['Land_area (sqm)'] === lastFeatures['Land_area (sqm)'] &&
         p.features.IsCondo === lastFeatures.IsCondo &&
-        p.predictedPrice === prediction.predicted_price
+        p.predictedPrice === activePrice
     );
 
     if (isAlreadyBookmarked) {
@@ -151,10 +154,10 @@ export default function Home() {
         'Land_area (sqm)': lastFeatures['Land_area (sqm)'],
         IsCondo: lastFeatures.IsCondo,
       },
-      predictedPrice: prediction.predicted_price,
-      rent: investmentData?.estimated_monthly_rent_php || 0,
+      predictedPrice: activePrice,
+      rent: ((activePrice * (investmentData?.gross_rental_yield_pct || 6.5) / 100) / 12) || 0,
       yield: investmentData?.gross_rental_yield_pct || 0,
-      roi: investmentData?.roi_5yr_pct || 0,
+      roi: (((Math.pow(1 + 0.05, 5) - 1) * 100) + ((investmentData?.gross_rental_yield_pct || 6.5) * 5)) || 0,
     };
 
     const updated = [newProject, ...savedProjects];
@@ -259,6 +262,11 @@ export default function Home() {
 
       const result = await predictPrice(finalFeatures);
       setPrediction(result);
+      setEstimatorCost({
+        total: result.predicted_price_php || 0,
+        low: result.price_range_low || 0,
+        high: result.price_range_high || 0
+      });
 
       toast.success('Report generated!', {
         id: toastId,
@@ -487,14 +495,15 @@ export default function Home() {
               <div className="space-y-8">
                 <div id="overview" className="scroll-mt-24">
                   <PriceDisplay
-                    price={prediction.predicted_price}
-                    low={prediction.price_range_low}
-                    high={prediction.price_range_high}
+                    price={estimatorCost?.total ?? prediction.predicted_price}
+                    low={estimatorCost?.low ?? prediction.price_range_low}
+                    high={estimatorCost?.high ?? prediction.price_range_high}
                   />
                 </div>
                 <ConstructionEstimator
                   floorArea={Number(lastFeatures?.['Floor_area (sqm)']) || 0}
                   quality={lastFeatures?.Quality || 'Standard'}
+                  onCostChange={setEstimatorCost}
                 />
                 <div id="shap-drivers" className="scroll-mt-24">
                   <ShapChart features={prediction.top_features} />
@@ -517,7 +526,7 @@ export default function Home() {
                   <InvestmentDashboard
                     data={investmentData}
                     isLoading={isInvestmentLoading}
-                    predictedPrice={prediction.predicted_price}
+                    predictedPrice={estimatorCost?.total ?? prediction.predicted_price}
                   />
                 </div>
               </div>
@@ -527,7 +536,7 @@ export default function Home() {
             <div id="comparables" className="scroll-mt-24">
               <RecommendedProperties
                 city={lastFeatures?.City}
-                predictedPrice={prediction.predicted_price}
+                predictedPrice={estimatorCost?.total ?? prediction.predicted_price}
                 bedrooms={Number(lastFeatures?.Bedrooms) || 0}
                 isCondo={Number(lastFeatures?.IsCondo)}
               />
