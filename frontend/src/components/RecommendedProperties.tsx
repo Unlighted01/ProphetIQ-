@@ -44,8 +44,8 @@ const RecommendedProperties: React.FC<RecommendedPropertiesProps> = ({
       const baths = Math.max(1, Math.floor(beds * 0.7));
       const sqm = Math.round((60 + i * 20) * (1 + tmpl.variance));
       const title = tmpl.title
-        .replace('{type}', typeName)
-        .replace('{city}', city);
+          .replace('{type}', typeName)
+          .replace('{city}', city);
       return {
         title,
         price,
@@ -54,98 +54,107 @@ const RecommendedProperties: React.FC<RecommendedPropertiesProps> = ({
         sqm,
         image: PROPERTY_IMAGES[i % PROPERTY_IMAGES.length],
         tag: i === 0 ? '🔥 Hot Deal' : i === 2 ? '⭐ Premium' : '✅ Good Value',
-        tagColor: i === 0 ? 'text-orange-400 bg-orange-500/10 border-orange-500/30'
-                : i === 2 ? 'text-yellow-400 bg-yellow-500/10 border-yellow-500/30'
-                : 'text-accent bg-accent/10 border-accent/30',
+        tagColor: i === 0 ? 'text-orange-400 bg-orange-500/10 border-orange-500/20'
+            : i === 2 ? 'text-yellow-400 bg-yellow-500/10 border-yellow-500/20'
+            : 'text-accent bg-accent/10 border-accent/20',
       };
     });
   }, [city, predictedPrice, bedrooms, isCondo, typeName]);
 
   return (
-    <div className="mt-8 animate-fade-in">
-      {/* Section header */}
-      <div className="flex items-center justify-between mb-5">
-        <div>
-          <h2 className="text-xl font-bold text-text-primary">Comparable Listings</h2>
-          <p className="text-xs text-text-muted mt-0.5">Similar properties in {city} near your estimated price</p>
-        </div>
-        <span className="text-[10px] uppercase tracking-widest font-bold text-text-muted border border-white/10 px-2 py-1 rounded-full">
-          AI Generated
-        </span>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {comps.map((comp, i) => (
-          <div
-            key={i}
-            className="glass rounded-2xl overflow-hidden border border-white/10 hover:border-primary/40 hover:-translate-y-1 hover:shadow-[0_8px_32px_rgba(59,130,246,0.2)] transition-all duration-300 group cursor-pointer"
-          >
-            {/* Image */}
-            <div className="relative h-44 overflow-hidden">
-              <img
-                src={comp.image}
-                alt={comp.title}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-              />
-              {/* Gradient overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-              {/* Price badge */}
-              <div className="absolute bottom-3 left-3">
-                <span className="bg-black/70 backdrop-blur-sm text-white font-bold text-sm px-3 py-1 rounded-lg border border-white/20">
-                  {formatPrice(comp.price)}
-                </span>
-              </div>
-              {/* Tag */}
-              <div className="absolute top-3 right-3">
-                <span className={`text-[10px] font-bold px-2 py-1 rounded-full border backdrop-blur-sm ${comp.tagColor}`}>
-                  {comp.tag}
-                </span>
-              </div>
-            </div>
-
-            {/* Details */}
-            <div className="p-4">
-              <h3 className="font-semibold text-text-primary text-sm leading-tight mb-3 line-clamp-2">
-                {comp.title}
-              </h3>
-
-              <div className="flex items-center gap-3 text-xs text-text-muted">
-                <span className="flex items-center gap-1">
-                  <svg className="w-3.5 h-3.5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                  </svg>
-                  {comp.beds} Beds
-                </span>
-                <span className="flex items-center gap-1">
-                  <svg className="w-3.5 h-3.5 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-                  </svg>
-                  {comp.baths} Baths
-                </span>
-                <span className="flex items-center gap-1">
-                  <svg className="w-3.5 h-3.5 text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
-                  </svg>
-                  {comp.sqm} sqm
-                </span>
-              </div>
-
-              <div className="mt-3 flex items-center justify-between">
-                <span className="text-[10px] text-text-muted flex items-center gap-1">
-                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                  </svg>
-                  {city}
-                </span>
-                <button className="text-[10px] font-semibold text-primary hover:text-white transition-colors">
-                  View Details →
-                </button>
-              </div>
-            </div>
+      <div className="mt-12 animate-fade-in">
+        {/* Section header */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-3">
+          <div className="border-l-2 border-primary pl-4">
+            <h2 className="text-xl font-bold uppercase tracking-wider text-on-surface font-headers">
+              Comparable Listings
+            </h2>
+            <p className="text-xs text-on-muted mt-0.5 font-medium">
+              Similar properties in {city} near your estimated price
+            </p>
           </div>
-        ))}
+          <span className="text-[9px] uppercase tracking-widest font-mono font-bold text-on-faint border border-border-color bg-bg-surface/50 px-3 py-1.5 rounded-lg self-start sm:self-center">
+            AI Generated Model
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {comps.map((comp, i) => (
+              <div
+                  key={i}
+                  className="glass glass-interactive rounded-2xl overflow-hidden border border-border-color group cursor-pointer flex flex-col justify-between"
+              >
+                {/* Image and badges */}
+                <div className="relative h-48 overflow-hidden bg-bg-deep">
+                  <img
+                      src={comp.image}
+                      alt={comp.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                  />
+                  {/* Subtle vignette gradient */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-bg-deep/80 via-transparent to-transparent"></div>
+                  
+                  {/* Price badge */}
+                  <div className="absolute bottom-3 left-3">
+                    <span className="bg-bg-deep/80 backdrop-blur-md text-on-surface font-mono tracking-tight font-bold text-sm px-3.5 py-1.5 rounded-xl border border-border-color shadow-lg">
+                      {formatPrice(comp.price)}
+                    </span>
+                  </div>
+                  
+                  {/* Category tag */}
+                  <div className="absolute top-3 right-3">
+                    <span className={`text-[9px] font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-full border backdrop-blur-md shadow-md ${comp.tagColor}`}>
+                      {comp.tag}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Listing Details */}
+                <div className="p-5 flex-grow flex flex-col justify-between gap-4">
+                  <div className="space-y-2">
+                    <h3 className="font-bold text-on-surface text-sm leading-tight line-clamp-2 font-headers uppercase tracking-wide group-hover:text-primary transition-colors">
+                      {comp.title}
+                    </h3>
+                    
+                    <p className="text-[10px] text-on-faint font-medium flex items-center gap-1">
+                      <svg className="w-3.5 h-3.5 text-primary flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                      </svg>
+                      {city}, Pangasinan Region
+                    </p>
+                  </div>
+
+                  {/* Dimension Matrices */}
+                  <div className="grid grid-cols-3 gap-2 bg-bg-deep/35 border border-border-color p-2 rounded-xl text-center text-[10px] font-headers font-bold uppercase tracking-wider text-on-muted">
+                    <div className="flex flex-col items-center py-1">
+                      <span className="text-[9px] text-on-faint mb-0.5">Beds</span>
+                      <span className="text-primary text-xs font-mono">{comp.beds}</span>
+                    </div>
+                    <div className="flex flex-col items-center py-1 border-x border-border-color">
+                      <span className="text-[9px] text-on-faint mb-0.5">Baths</span>
+                      <span className="text-accent text-xs font-mono">{comp.baths}</span>
+                    </div>
+                    <div className="flex flex-col items-center py-1">
+                      <span className="text-[9px] text-on-faint mb-0.5">Area</span>
+                      <span className="text-secondary text-xs font-mono">{comp.sqm}㎡</span>
+                    </div>
+                  </div>
+
+                  {/* CTA Footer */}
+                  <div className="flex items-center justify-between pt-1 border-t border-border-color/30">
+                    <span className="text-[9px] text-on-faint uppercase font-bold tracking-widest font-mono">
+                      REF // C-{i + 1}
+                    </span>
+                    <button className="text-[10px] font-bold text-primary uppercase tracking-wider hover:text-on-surface transition-colors flex items-center gap-1 font-headers">
+                      Details
+                      <span className="group-hover:translate-x-1 transition-transform">→</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+          ))}
+        </div>
       </div>
-    </div>
   );
 };
 

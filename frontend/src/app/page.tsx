@@ -19,7 +19,7 @@ import dynamic from 'next/dynamic';
 // Dynamic import for MapView to prevent SSR issues with Leaflet
 const MapView = dynamic(() => import('@/components/MapView'), {
   ssr: false,
-  loading: () => <div className="h-[400px] w-full rounded-xl bg-white/5 animate-pulse mt-6 border border-white/10" />,
+  loading: () => <div className="h-[400px] w-full rounded-xl bg-bg-surface animate-pulse mt-6 border border-border-color" />,
 });
 
 interface LoadingStepsProps {
@@ -30,13 +30,13 @@ const LoadingSteps: React.FC<LoadingStepsProps> = ({ step }) => {
   if (step === 'idle' || step === 'done') return null;
 
   return (
-    <div className="glass p-8 rounded-2xl border border-white/10 max-w-xl mx-auto shadow-[0_8px_32px_rgba(59,130,246,0.1)] space-y-6 animate-fade-in my-8">
+    <div className="glass p-8 rounded-2xl border border-border-color max-w-xl mx-auto shadow-2xl space-y-6 animate-fade-in my-8">
       <div className="flex items-center gap-3">
         <div className="relative flex items-center justify-center">
           <span className="absolute w-5 h-5 bg-primary/30 rounded-full animate-ping"></span>
           <span className="relative w-3.5 h-3.5 bg-primary rounded-full"></span>
         </div>
-        <h3 className="text-base font-bold text-white tracking-tight">Generating Site Intelligence Report...</h3>
+        <h3 className="text-base font-bold text-on-surface tracking-tight font-headers uppercase">Generating Site Intelligence Report...</h3>
       </div>
 
       <div className="space-y-4">
@@ -46,12 +46,12 @@ const LoadingSteps: React.FC<LoadingStepsProps> = ({ step }) => {
             <span className="text-sm">
               {step === 'predicting' ? '⏳' : '✅'}
             </span>
-            <span className={`text-sm font-semibold ${step === 'predicting' ? 'text-white' : 'text-text-muted'}`}>
+            <span className={`text-sm font-semibold ${step === 'predicting' ? 'text-on-surface' : 'text-on-muted'}`}>
               Running XGBoost Pricing Engine
             </span>
           </div>
           {step === 'predicting' && (
-            <span className="text-xs text-primary font-bold animate-pulse">In Progress...</span>
+            <span className="text-xs text-primary font-bold animate-pulse font-headers">In Progress...</span>
           )}
         </div>
 
@@ -61,12 +61,12 @@ const LoadingSteps: React.FC<LoadingStepsProps> = ({ step }) => {
             <span className="text-sm">
               {step === 'predicting' ? '⚪' : step === 'advising' ? '⏳' : '✅'}
             </span>
-            <span className={`text-sm font-semibold ${step === 'advising' ? 'text-white' : 'text-text-muted'}`}>
+            <span className={`text-sm font-semibold ${step === 'advising' ? 'text-on-surface' : 'text-on-muted'}`}>
               ProphetIQ AI Site Assessment
             </span>
           </div>
           {step === 'advising' && (
-            <span className="text-xs text-primary font-bold animate-pulse">In Progress...</span>
+            <span className="text-xs text-primary font-bold animate-pulse font-headers">In Progress...</span>
           )}
         </div>
 
@@ -76,12 +76,12 @@ const LoadingSteps: React.FC<LoadingStepsProps> = ({ step }) => {
             <span className="text-sm">
               {step === 'predicting' || step === 'advising' ? '⚪' : '⏳'}
             </span>
-            <span className={`text-sm font-semibold ${step === 'investing' ? 'text-white' : 'text-text-muted'}`}>
+            <span className={`text-sm font-semibold ${step === 'investing' ? 'text-on-surface' : 'text-on-muted'}`}>
               Calculating Construction & Investment Metrics
             </span>
           </div>
           {step === 'investing' && (
-            <span className="text-xs text-primary font-bold animate-pulse">In Progress...</span>
+            <span className="text-xs text-primary font-bold animate-pulse font-headers">In Progress...</span>
           )}
         </div>
       </div>
@@ -310,7 +310,7 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen py-20 px-4 sm:px-6 max-w-6xl mx-auto">
+    <main className="min-h-screen bg-blueprint py-20 px-4 sm:px-6 max-w-6xl mx-auto">
       <button
         onClick={toggleTheme}
         className="fixed top-4 right-4 z-50 w-10 h-10 rounded-full glass border border-white/10 flex items-center justify-center hover:border-primary/50 transition-all"
@@ -322,24 +322,24 @@ export default function Home() {
       {/* Header / Hero */}
       <header className="text-center mb-16 animate-fade-in">
         {/* Status pill */}
-        <div className="inline-flex items-center space-x-2 bg-white/5 border border-white/10 px-4 py-2 rounded-full mb-6">
+        <div className="inline-flex items-center space-x-2 glass px-4 py-2 rounded-full mb-6 border border-border-color shadow-sm">
           <span
-            className={`w-2 h-2 rounded-full animate-pulse ${
+            className={`w-2 h-2 rounded-full animate-telemetry-pulse ${
               serverStatus === 'online'
-                ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]'
+                ? 'bg-accent'
                 : serverStatus === 'checking'
-                ? 'bg-yellow-400 shadow-[0_0_8px_rgba(251,191,36,0.8)]'
+                ? 'bg-warning'
                 : 'bg-danger'
             }`}
           />
-          <span className="text-[10px] uppercase tracking-widest font-bold text-text-secondary">
+          <span className="text-[9px] uppercase tracking-[0.2em] font-bold text-on-muted font-headers">
             Firm Systems&nbsp;
             <span
               className={
                 serverStatus === 'online'
-                  ? 'text-emerald-400'
+                  ? 'text-accent'
                   : serverStatus === 'checking'
-                  ? 'text-yellow-400'
+                  ? 'text-warning'
                   : 'text-danger'
               }
             >
@@ -348,19 +348,19 @@ export default function Home() {
           </span>
         </div>
 
-        <h1 className="text-6xl md:text-8xl font-black mb-6 tracking-tighter">
+        <h1 className="text-5xl md:text-7xl font-bold mb-6 tracking-tighter font-headers uppercase text-on-surface">
           Prophet<span className="text-gradient">IQ</span>
         </h1>
-        <p className="text-text-secondary text-lg md:text-xl max-w-2xl mx-auto leading-relaxed">
+        <p className="text-on-muted text-base md:text-lg max-w-2xl mx-auto leading-relaxed">
           The next generation of{' '}
-          <span className="text-white font-bold underline decoration-yellow-500">
+          <span className="text-on-surface font-bold underline decoration-primary decoration-2">
             Engineering &amp; Construction
           </span>{' '}
           intelligence. Bridge the gap between property value and buildability in Pangasinan.
         </p>
 
         {/* Quick stats bar */}
-        <div className="flex flex-wrap justify-center gap-4 mt-10">
+        <div className="flex flex-wrap justify-center gap-4 mt-10 font-headers">
           {[
             { value: '44', label: 'Municipalities' },
             { value: '±8%', label: 'Avg. Accuracy' },
@@ -369,10 +369,10 @@ export default function Home() {
           ].map((stat) => (
             <div
               key={stat.label}
-              className="flex flex-col items-center bg-white/5 border border-white/10 px-5 py-3 rounded-xl hover:border-white/20 hover:-translate-y-0.5 transition-all duration-200 cursor-default"
+              className="glass glass-interactive flex flex-col items-center px-6 py-3.5 rounded-xl cursor-default border border-border-color"
             >
-              <span className="text-base font-black text-white">{stat.value}</span>
-              <span className="text-[10px] text-text-muted uppercase tracking-widest mt-0.5">
+              <span className="text-sm font-bold text-on-surface tracking-tight">{stat.value}</span>
+              <span className="text-[9px] text-on-faint uppercase tracking-[0.2em] mt-1 font-semibold">
                 {stat.label}
               </span>
             </div>
@@ -409,14 +409,14 @@ export default function Home() {
             onLocationSelect={handleLocationSelect}
             isPinned={isPinned}
           />
-          <div className="mt-4 p-4 glass rounded-xl border border-yellow-500/20 bg-yellow-500/5">
-            <h4 className="text-xs font-bold text-yellow-500 uppercase tracking-widest mb-2 flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-yellow-500 animate-pulse" />
+          <div className="mt-4 p-4 glass rounded-xl border border-warning/20 bg-warning/[0.03] shadow-md transition-all duration-300 hover:border-warning/30">
+            <h4 className="text-xs font-bold text-warning uppercase tracking-widest mb-2 flex items-center gap-2 font-headers">
+              <span className="w-2 h-2 rounded-full bg-warning animate-telemetry-pulse" />
               Engineering Precision Mode
             </h4>
-            <p className="text-[10px] text-text-muted leading-relaxed">
+            <p className="text-[10px] text-on-muted leading-relaxed font-medium">
               Select your municipality first, then{' '}
-              <span className="text-white font-bold">click on the map</span> to pin-point the exact
+              <span className="text-on-surface font-extrabold underline decoration-warning/40">click on the map</span> to pin-point the exact
               project site. This adjusts for local terrain and neighborhood valuation factors.
             </p>
           </div>
@@ -431,26 +431,26 @@ export default function Home() {
         {prediction ? (
           <div className="animate-fade-in space-y-12">
             {/* Report Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-l-4 border-yellow-500 pl-6 py-2">
-              <div>
-                <h2 className="text-3xl font-black text-text-primary tracking-tight">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-l-4 border-primary pl-6 py-2">
+              <div className="space-y-1">
+                <h2 className="text-2xl font-bold text-on-surface tracking-tight font-headers uppercase">
                   Technical Intelligence Report
                 </h2>
-                <p className="text-text-muted text-sm uppercase tracking-widest font-bold">
+                <p className="text-on-faint text-[10px] uppercase tracking-[0.2em] font-bold font-headers">
                   Project Site Analysis: {lastFeatures?.City}, Pangasinan
                 </p>
               </div>
-              <div className="flex flex-wrap gap-3 self-start sm:self-center">
+              <div className="flex flex-wrap gap-3 self-start sm:self-center font-headers">
                 <button
                   onClick={handleSaveProject}
-                  className="flex items-center gap-2 bg-gradient-to-r from-yellow-500 to-amber-600 hover:from-yellow-600 hover:to-amber-700 text-white font-extrabold text-xs px-5 py-2.5 rounded-full shadow-lg hover:shadow-yellow-500/20 active:scale-95 transition-all"
+                  className="flex items-center gap-2 bg-gradient-to-r from-primary to-secondary hover:shadow-[0_4px_16px_rgba(6,182,212,0.3)] text-white font-bold text-xs px-5 py-2.5 rounded-full shadow-lg active:scale-95 transition-all duration-300"
                 >
                   <span>⭐</span>
                   <span>Save Site to Cockpit</span>
                 </button>
                 <button
                   onClick={handleExportPDF}
-                  className="flex items-center gap-2 bg-white/5 hover:bg-white/10 text-white border border-white/10 font-extrabold text-xs px-5 py-2.5 rounded-full shadow-lg active:scale-95 transition-all"
+                  className="flex items-center gap-2 glass hover:bg-white/5 dark:hover:bg-white/5 text-on-surface border border-border-color font-bold text-xs px-5 py-2.5 rounded-full shadow-lg active:scale-95 transition-all duration-300"
                 >
                   <span>📄</span>
                   <span>Download Blueprint PDF</span>
@@ -460,7 +460,7 @@ export default function Home() {
 
             {/* Smooth Anchor Sub-Navigation */}
             <div className="sticky top-4 z-40 flex justify-center w-full max-w-xl mx-auto animate-fade-in px-4">
-              <div className="glass flex items-center justify-between p-1 rounded-full border border-border bg-glass-bg shadow-lg backdrop-blur-md w-full gap-1 overflow-x-auto scrollbar-none">
+              <div className="glass flex items-center justify-between p-1 rounded-full border border-border-color bg-glass-bg shadow-lg backdrop-blur-md w-full gap-1 overflow-x-auto scrollbar-none">
                 {[
                   { label: 'Overview', id: 'overview' },
                   { label: 'AI Advisor', id: 'ai-assessment' },
@@ -473,7 +473,7 @@ export default function Home() {
                     onClick={() => {
                       document.getElementById(item.id)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     }}
-                    className="px-3.5 py-1.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider text-text-secondary hover:text-text-primary hover:bg-black/5 dark:hover:bg-white/10 transition-all whitespace-nowrap"
+                    className="px-3.5 py-1.5 rounded-full text-[9px] font-bold uppercase tracking-widest text-on-muted hover:text-on-surface dark:hover:bg-white/5 hover:bg-black/5 transition-all whitespace-nowrap font-headers"
                   >
                     {item.label}
                   </button>
@@ -535,10 +535,10 @@ export default function Home() {
           </div>
         ) : (
           !isLoading && (
-            <div className="glass p-20 rounded-3xl border-dashed border-border flex flex-col items-center justify-center text-center space-y-6 opacity-40">
-              <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center">
+            <div className="glass p-20 rounded-3xl border-dashed border-border-color flex flex-col items-center justify-center text-center space-y-6 opacity-50">
+              <div className="w-20 h-20 rounded-full bg-bg-surface flex items-center justify-center border border-border-color shadow-inner">
                 <svg
-                  className="w-10 h-10 text-text-muted"
+                  className="w-10 h-10 text-on-muted"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -551,9 +551,9 @@ export default function Home() {
                   />
                 </svg>
               </div>
-              <div>
-                <h3 className="text-xl font-bold text-text-primary mb-2">Awaiting Project Data</h3>
-                <p className="text-sm text-text-muted max-w-xs">
+              <div className="space-y-1.5">
+                <h3 className="text-xl font-bold text-on-surface mb-2 font-headers uppercase tracking-wide">Awaiting Project Data</h3>
+                <p className="text-xs text-on-muted max-w-xs font-medium">
                   Fill out the construction parameters above to generate your technical site
                   intelligence report.
                 </p>
@@ -581,7 +581,7 @@ export default function Home() {
       <ContactSection />
 
       {/* Footer */}
-      <footer className="mt-32 pt-10 border-t border-border flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0 text-[10px] text-text-muted uppercase tracking-[0.3em] font-bold">
+      <footer className="mt-32 pt-10 border-t border-border-color/30 flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0 text-[10px] text-on-muted uppercase tracking-[0.3em] font-bold">
         <span>ProphetIQ Engineering &copy; {new Date().getFullYear()}</span>
         <div className="flex space-x-6">
           <a href="/docs" className="hover:text-primary transition-colors">
@@ -603,7 +603,7 @@ export default function Home() {
 
       {/* Floating Action Console */}
       <div className="fixed bottom-6 right-6 z-50 flex flex-col items-center gap-3">
-        <div className="glass flex flex-col items-center p-2 rounded-2xl border border-border bg-glass-bg shadow-2xl backdrop-blur-md gap-2">
+        <div className="glass flex flex-col items-center p-2 rounded-2xl border border-border-color bg-glass-bg shadow-2xl backdrop-blur-md gap-2">
           {/* Scroll to Top */}
           {showScrollUp && (
             <button

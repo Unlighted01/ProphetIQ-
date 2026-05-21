@@ -1,16 +1,18 @@
 import type { Metadata } from "next";
-import { Inter, Outfit } from "next/font/google";
+import { Plus_Jakarta_Sans, Space_Grotesk } from "next/font/google";
 import { Toaster } from "sonner";
 import "./globals.css";
 
-const inter = Inter({
+const plusJakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
-  variable: "--font-inter",
+  variable: "--font-plus-jakarta",
+  weight: ["300", "400", "500", "600", "700", "800"],
 });
 
-const outfit = Outfit({
+const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
-  variable: "--font-outfit",
+  variable: "--font-space-grotesk",
+  weight: ["300", "400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
@@ -45,7 +47,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} ${outfit.variable}`}>
+    <html lang="en" className={`${plusJakarta.variable} ${spaceGrotesk.variable}`}>
       <head>
         <script dangerouslySetInnerHTML={{
           __html: `
@@ -63,11 +65,11 @@ export default function RootLayout({
           theme="dark"
           toastOptions={{
             style: {
-              background: 'rgba(18, 18, 18, 0.95)',
-              border: '1px solid rgba(255,255,255,0.1)',
+              background: 'var(--bg-surface)',
+              border: '1px solid var(--border-color)',
               backdropFilter: 'blur(12px)',
-              color: '#ffffff',
-              fontFamily: 'var(--font-outfit), sans-serif',
+              color: 'var(--text-primary)',
+              fontFamily: 'var(--font-main), sans-serif',
               fontSize: '13px',
             },
           }}

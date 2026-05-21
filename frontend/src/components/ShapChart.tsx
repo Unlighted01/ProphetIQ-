@@ -27,24 +27,26 @@ const ShapChart: React.FC<ShapChartProps> = ({ features }) => {
   const maxImpact = Math.max(...features.map((f) => Math.abs(f.impact)));
 
   return (
-    <div className="glass p-8 rounded-2xl animate-fade-in" style={{ animationDelay: '0.2s' }}>
+    <div className="glass p-8 rounded-2xl animate-fade-in border border-border-color shadow-2xl relative overflow-hidden" style={{ animationDelay: '0.2s' }}>
+      <div className="absolute top-0 left-0 w-20 h-1 bg-gradient-to-r from-primary to-transparent" />
+      
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-6 pb-4 border-b border-border-color/30 font-headers">
         <div>
-          <h3 className="text-xl font-bold text-text-primary tracking-tight">
-            Price <span className="text-gradient">Drivers</span>
+          <h3 className="text-lg font-bold text-on-surface tracking-tight uppercase">
+            Model <span className="text-gradient">Drivers</span>
           </h3>
-          <p className="text-[10px] text-text-muted uppercase tracking-widest mt-1">
-            SHAP Attribution Analysis
+          <p className="text-[9px] text-on-faint uppercase tracking-widest mt-0.5">
+            XGBoost Feature Attribution
           </p>
         </div>
-        <div className="flex gap-3 text-[10px] font-bold uppercase tracking-wider">
+        <div className="flex gap-4 text-[9px] font-bold uppercase tracking-wider font-mono">
           <span className="flex items-center gap-1.5 text-danger">
-            <span className="inline-block w-2 h-2 rounded-full bg-danger" />
+            <span className="inline-block w-2.5 h-1 rounded-sm bg-danger" />
             Negative
           </span>
           <span className="flex items-center gap-1.5 text-accent">
-            <span className="inline-block w-2 h-2 rounded-full bg-accent" />
+            <span className="inline-block w-2.5 h-1 rounded-sm bg-accent" />
             Positive
           </span>
         </div>
@@ -55,29 +57,36 @@ const ShapChart: React.FC<ShapChartProps> = ({ features }) => {
         {features.slice(0, 8).map((f, idx) => {
           const isPositive = f.impact > 0;
           const barWidth = (Math.abs(f.impact) / maxImpact) * 100;
-          const color = isPositive ? 'bg-accent' : 'bg-danger';
+          
+          // Next-generation gradient styles
+          const colorClass = isPositive 
+            ? 'bg-gradient-to-r from-accent to-emerald-400/30' 
+            : 'bg-gradient-to-r from-danger to-rose-400/30';
           const textColor = isPositive ? 'text-accent' : 'text-danger';
-          const bgColor = isPositive ? 'bg-accent/10' : 'bg-danger/10';
+          const borderGlow = isPositive ? 'hover:border-accent/30' : 'hover:border-danger/30';
+          const indicatorBg = isPositive 
+            ? 'bg-accent/[0.04] hover:bg-accent/[0.08]' 
+            : 'bg-danger/[0.04] hover:bg-danger/[0.08]';
 
           return (
             <div
               key={idx}
-              className={`rounded-xl px-4 py-3 ${bgColor} border border-white/5 hover:border-white/15 transition-all duration-200`}
+              className={`rounded-xl px-4 py-3.5 ${indicatorBg} border border-border-color/50 transition-all duration-300 ${borderGlow}`}
               style={{ animationDelay: `${idx * 80}ms` }}
             >
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-xs font-medium text-text-secondary truncate max-w-[60%]">
+              <div className="flex justify-between items-center mb-2 font-headers text-xs font-bold uppercase tracking-wider">
+                <span className="text-on-muted truncate max-w-[60%]">
                   {formatFeatureName(f.feature)}
                 </span>
-                <span className={`text-xs font-bold ${textColor} tabular-nums`}>
-                  {isPositive ? '+' : ''}₱{Math.abs(f.impact).toLocaleString('en-PH', { maximumFractionDigits: 0 })}
+                <span className={`${textColor} tabular-nums font-mono font-bold text-[11px]`}>
+                  {isPositive ? '+' : '-'}₱{Math.abs(f.impact).toLocaleString('en-PH', { maximumFractionDigits: 0 })}
                 </span>
               </div>
 
-              {/* Bar track */}
-              <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+              {/* High-fidelity glowing bar track */}
+              <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden border border-white/5">
                 <div
-                  className={`h-full rounded-full ${color} transition-all duration-700 ease-out`}
+                  className={`h-full rounded-full ${colorClass} transition-all duration-700 ease-out`}
                   style={{
                     width: `${barWidth}%`,
                     transitionDelay: `${idx * 60 + 200}ms`,
@@ -89,8 +98,8 @@ const ShapChart: React.FC<ShapChartProps> = ({ features }) => {
         })}
       </div>
 
-      <p className="text-[10px] text-text-muted mt-5 pt-4 border-t border-white/5">
-        Each bar shows how much that feature pushed the predicted price up or down from the model baseline.
+      <p className="text-[9px] text-on-faint uppercase font-bold tracking-wider font-headers mt-5 pt-4 border-t border-border-color/30">
+        *Attribution indices are computed dynamically via SHAP values, tracing how parameters shift prediction deviation from global base values.
       </p>
     </div>
   );

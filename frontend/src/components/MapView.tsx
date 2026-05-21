@@ -7,19 +7,6 @@ import L from 'leaflet';
 import { toast } from 'sonner';
 import { reverseGeocodeProxy } from '@/lib/api';
 
-// Fix for default marker icons in Leaflet with Webpack/Next
-const DefaultIcon = L.icon({
-  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-  iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41]
-});
-
-L.Marker.prototype.options.icon = DefaultIcon;
-
 interface MapViewProps {
   latitude: number;
   longitude: number;
@@ -27,7 +14,7 @@ interface MapViewProps {
   price?: number;
   onLocationSelect?: (lat: number, lng: number) => void;
   isInteractive?: boolean;
-  isPinned?: boolean;    // ← add this
+  isPinned?: boolean;
 }
 
 // Helper to center the map when coordinates change
@@ -132,17 +119,18 @@ const LocationPicker: React.FC<{
 
   const markerColor = 
     markerState === 'validating' ? '#3b82f6' :  // blue
-    markerState === 'valid'      ? '#eab308' :  // yellow  
+    markerState === 'valid'      ? 'var(--primary)' :  // theme cyan/charcoal
                                    '#ef4444';   // red
 
   const icon = L.divIcon({
     className: '',
     html: `<div style="
-      width:14px;height:14px;
-      border-radius:50%;
-      background:${markerColor};
-      border:2px solid white;
-      box-shadow:0 0 8px ${markerColor};
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: ${markerColor};
+      border: 2px solid white;
+      box-shadow: 0 0 10px ${markerColor};
     "></div>`,
     iconAnchor: [7, 7],
   });
@@ -152,31 +140,71 @@ const LocationPicker: React.FC<{
 
 const MapView: React.FC<MapViewProps> = ({ latitude, longitude, city, price, onLocationSelect, isInteractive = true, isPinned = false }) => {
   const [pinnedCoords, setPinnedCoords] = useState({ lat: latitude, lng: longitude });
+  const [currentTheme, setCurrentTheme] = useState('dark');
+
+  // Monitor DOM dataset changes to toggle tiles on theme flip
+  useEffect(() => {
+    const checkTheme = () => {
+      const activeTheme = document.documentElement.dataset.theme || 'dark';
+      setCurrentTheme(activeTheme);
+    };
+    checkTheme();
+    
+    const observer = new MutationObserver(checkTheme);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-theme']
+    });
+    
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     setPinnedCoords({ lat: latitude, lng: longitude });
   }, [latitude, longitude]);
 
+  // Define dynamic basemaps depending on active theme
+  const tileUrl = currentTheme === 'light'
+    ? 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png'
+    : 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
+
+  // High-fidelity pulsing telemetry sonar pin
+  const pulsingIcon = L.divIcon({
+    className: '',
+    html: `
+      <div style="position: relative; display: flex; align-items: center; justify-content: center; width: 32px; height: 32px;">
+        <div style="position: absolute; width: 32px; height: 32px; background-color: var(--primary); opacity: 0.3; border-radius: 50%; animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;"></div>
+        <div style="position: absolute; width: 14px; height: 14px; background-color: var(--primary); border: 2px solid var(--bg-deep); border-radius: 50%; box-shadow: 0 0 10px var(--primary);"></div>
+      </div>
+    `,
+    iconSize: [32, 32],
+    iconAnchor: [16, 16],
+    popupAnchor: [0, -16]
+  });
+
   return (
-    <div className="glass p-4 rounded-2xl mt-6 border border-white/10 overflow-hidden animate-fade-in relative z-0">
-      <div className="flex items-center justify-between mb-4 px-4 pt-2">
+    <div className="glass p-4 rounded-2xl mt-6 border border-border-color overflow-hidden animate-fade-in relative z-0 shadow-lg">
+      <div className="flex items-center justify-between mb-4 px-4 pt-2 font-headers">
         <div className="flex items-center">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-yellow-500 to-orange-600 flex items-center justify-center mr-3 shadow-[0_0_10px_rgba(234,179,8,0.3)]">
-            <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary/20 to-primary/40 flex items-center justify-center mr-3 shadow-[0_0_10px_var(--border-glow)] border border-primary/20">
+            <svg className="w-4 h-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
           </div>
-          <h3 className="text-xl font-bold text-text-primary tracking-tight">Project Site Intelligence</h3>
+          <div>
+            <h3 className="text-lg font-bold text-on-surface tracking-tight uppercase">Site Intelligence Map</h3>
+            <p className="text-[9px] text-on-faint uppercase tracking-widest font-semibold mt-0.5">Telemetry & Geospatial Lock</p>
+          </div>
         </div>
         {isInteractive && (
-          <span className="text-[9px] font-bold text-yellow-500 bg-yellow-500/10 border border-yellow-500/30 px-2 py-1 rounded-full uppercase tracking-widest animate-pulse">
-            Right-Click to Pin
+          <span className="text-[9px] font-bold text-primary bg-primary/10 border border-primary/20 px-2.5 py-1 rounded-full uppercase tracking-wider animate-pulse">
+            Right-Click Map to Pin
           </span>
         )}
       </div>
       
-      <div className="h-[400px] w-full rounded-xl overflow-hidden relative border border-white/10">
+      <div className="h-[400px] w-full rounded-xl overflow-hidden relative border border-border-color shadow-inner">
         <MapContainer 
           center={[pinnedCoords.lat, pinnedCoords.lng]} 
           zoom={14} 
@@ -184,8 +212,9 @@ const MapView: React.FC<MapViewProps> = ({ latitude, longitude, city, price, onL
           style={{ height: '100%', width: '100%', zIndex: 10 }}
         >
           <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            key={currentTheme}
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+            url={tileUrl}
           />
           <MapUpdater lat={pinnedCoords.lat} lng={pinnedCoords.lng} isPinned={isPinned} />
           <MapInteractionController />
@@ -196,25 +225,25 @@ const MapView: React.FC<MapViewProps> = ({ latitude, longitude, city, price, onL
             />
           )}
           
-          <Marker position={[pinnedCoords.lat, pinnedCoords.lng]}>
+          <Marker position={[pinnedCoords.lat, pinnedCoords.lng]} icon={pulsingIcon}>
             <Popup>
-              <div className="text-center font-sans min-w-[120px]">
-                <p className="font-bold text-sm m-0 text-slate-800">{city} Project Site</p>
+              <div className="text-center font-sans min-w-[140px] p-1">
+                <p className="font-bold text-xs m-0 text-slate-800 uppercase tracking-wider font-headers">{city} Site</p>
                 {price && (
-                  <p className="text-xs text-blue-600 font-bold m-0 mt-1 italic">Est. ₱{price.toLocaleString()}</p>
+                  <p className="text-xs text-cyan-600 font-extrabold m-0 mt-1 italic font-mono">Est. ₱{price.toLocaleString()}</p>
                 )}
-                <p className="text-[10px] text-slate-500 mt-1">
-                  {pinnedCoords.lat.toFixed(5)}, {pinnedCoords.lng.toFixed(5)}
+                <p className="text-[9px] text-slate-500 mt-1 font-mono">
+                  {pinnedCoords.lat.toFixed(5)}° N, {pinnedCoords.lng.toFixed(5)}° E
                 </p>
               </div>
             </Popup>
           </Marker>
         </MapContainer>
       </div>
-      <div className="mt-3 px-4 flex justify-between items-center text-[10px] text-text-muted">
-        <p className="flex items-center gap-1">
-          <span className="w-2 h-2 rounded-full bg-yellow-500"></span>
-          Click the map once to scroll-zoom. Right-Click anywhere to pin the exact site location.
+      <div className="mt-3 px-4 flex justify-between items-center text-[9px] text-on-muted uppercase tracking-wider font-bold">
+        <p className="flex items-center gap-1.5 font-medium leading-relaxed text-on-muted normal-case">
+          <span className="w-1.5 h-1.5 rounded-full bg-primary animate-telemetry-pulse"></span>
+          Click map once to enable scroll-zoom. Right-Click to pin precision geotech coordinates.
         </p>
       </div>
     </div>
@@ -222,4 +251,3 @@ const MapView: React.FC<MapViewProps> = ({ latitude, longitude, city, price, onL
 };
 
 export default MapView;
-
