@@ -29,11 +29,11 @@ def predict_price(features: dict) -> Tuple[float, list]:
     
     # 1. Base Cost per Square Meter based on construction grade (Quality)
     quality_rates = {
-        'Economy': 25000.0,
-        'Standard': 40000.0,
-        'Premium': 60000.0
+        'Economy': 14000.0,
+        'Standard': 22000.0,
+        'Premium': 35000.0
     }
-    base_rate = quality_rates.get(quality, 40000.0)
+    base_rate = quality_rates.get(quality, 22000.0)
     
     # 2. Usage Multiplier
     usage_multipliers = {
@@ -47,8 +47,8 @@ def predict_price(features: dict) -> Tuple[float, list]:
     base_structural_cost = floor_area * base_rate * usage_mult
     
     # 4. Partition and fixture costs
-    bedroom_partition_cost = bedrooms * 45000.0
-    bathroom_fixture_cost = bath * 75000.0 # higher due to tiling, waterproofing, and wet plumbing lines
+    bedroom_partition_cost = bedrooms * 15000.0
+    bathroom_fixture_cost = bath * 25000.0 # higher due to tiling, waterproofing, and wet plumbing lines
     
     # 5. Height / Structural framing complexity multiplier (IsCondo as vertical high-rise framing)
     condo_multiplier = 1.20 if is_condo == 1 else 1.0

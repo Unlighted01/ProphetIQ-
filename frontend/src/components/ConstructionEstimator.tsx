@@ -40,10 +40,10 @@ const ConstructionEstimator: React.FC<ConstructionEstimatorProps> = ({
     SandGravel: 950,    // per cu.m
     HollowBlocks: 14,   // per pc
     WireNails: 85,      // per kg
-    Finishing: 10000,   // per sqm (Tiles, Paint, Drywall, Ceilings)
-    MEP: 6000,          // per sqm (Electrical, Plumbing)
-    Roofing: 4500,      // per sqm (Structural framing, Sheets)
-    Openings: 4000,     // per sqm (Doors, Windows)
+    Finishing: 5500,    // per sqm (Tiles, Paint, Drywall, Ceilings)
+    MEP: 2200,          // per sqm (Electrical, Plumbing)
+    Roofing: 1800,      // per sqm (Structural framing, Sheets)
+    Openings: 1800,     // per sqm (Doors, Windows)
   });
 
   // Toggle checks for each material inclusion
@@ -166,14 +166,14 @@ const ConstructionEstimator: React.FC<ConstructionEstimatorProps> = ({
 
   // Method 1: Rough Area Method specs
   const REGIONAL_RATES = {
-    Economy: 18500,    // ₱18,500/sqm
-    Standard: 27000,   // ₱27,000/sqm
-    Premium: 41000,    // ₱41,000/sqm
+    Economy: 14000,    // ₱14,000/sqm
+    Standard: 22000,   // ₱22,000/sqm
+    Premium: 35000,    // ₱35,000/sqm
   };
 
   // Direct Cost Calculation based on active methodology
   const totalDetailedMaterials = cementCost + steelCost + sandCost + chbCost + nailsCost + finishingCost + mepCost + roofingCost + openingsCost + customMaterialsCost;
-  const detailedLabor = totalDetailedMaterials * 0.667; // Labor represents ~40% of detailed cost
+  const detailedLabor = totalDetailedMaterials * 0.40; // Labor represents ~30% of direct cost (40% of materials)
 
   const directCost = estimationMethod === 'rough' 
     ? (floorArea * REGIONAL_RATES[activeGrade])
